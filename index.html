@@ -412,31 +412,31 @@
     if(state === 'idle'){
       timerEl.style.color = '';
       statusEl.textContent = '밥솥이 준비됐어요. 취사를 시작해보세요!';
-      btnEl.textContent = '🍚 취사 시작';
+      btnEl.textContent = '취사 시작';
       btnEl.disabled = false;
       btnEl.style.background = '';
       btnEl.style.color = '';
     } else if(state === 'cooking'){
       imgEl.classList.add('cooking');
       lightEl.classList.add('cooking');
-      statusEl.textContent = '🔥 열심히 밥 짓는 중... 기다려주세요!';
-      btnEl.textContent = '⛔ 취사 중 (취소 불가)';
+      statusEl.textContent = '취사중 입니다.';
+      btnEl.textContent = '취사 중';
       btnEl.disabled = true;
       timerEl.style.color = '';
     } else if(state === 'steaming'){
       lightEl.classList.add('steam');
-      statusEl.textContent = '💨 증기 배출 중... 잠시만요!';
-      btnEl.textContent = '💨 증기 배출 중...';
+      statusEl.textContent = '취사가 완료되었습니다. 증기 배출을 시작합니다.';
+      btnEl.textContent = '잠시만 기다려 주세요';
       btnEl.disabled = true;
       timerEl.style.color = 'var(--accent)';
     } else if(state === 'done'){
       imgEl.classList.add('done');
       lightEl.classList.add('done');
-      timerEl.textContent = '완성!';
+      timerEl.textContent = '완성';
       timerEl.style.color = 'var(--success)';
       timerEl.classList.remove('urgent');
-      statusEl.textContent = '🍚 밥이 완성됐어요! 맛있게 드세요~';
-      btnEl.textContent = '🔄 다시 취사하기';
+      statusEl.textContent = '증기 배출이 끝났습니다. 밥을 잘 저어주세요.';
+      btnEl.textContent = '다시 취사하기';
       btnEl.disabled = false;
       btnEl.style.background = 'var(--surface2)';
       btnEl.style.color = 'var(--muted)';
@@ -476,7 +476,7 @@
     }
     const maxCount = entries[0][1];
     const total = entries.reduce((s,[,c])=>s+c,0);
-    lbTotal.textContent = `총 ${total}공기`;
+    lbTotal.textContent = `총 ${total}회`;
     const medals = ['🥇','🥈','🥉'];
     lbList.innerHTML = entries.slice(0,10).map(([name, count], i) => {
       const pct = maxCount > 0 ? Math.round(count/maxCount*100) : 0;
@@ -489,7 +489,7 @@
           <div class="lb-row-inner">
             <div class="lb-bar-wrap"><div class="lb-bar" style="width:${pct}%"></div></div>
             <span class="lb-name">${name} ${isMe}</span>
-            <span class="lb-count">${count}</span><span class="lb-unit">공기</span>
+            <span class="lb-count">${count}</span><span class="lb-unit">회</span>
           </div>
         </div>`;
     }).join('');
