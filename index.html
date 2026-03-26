@@ -157,35 +157,6 @@
       border: 1px solid var(--border);
     }
 
-    /* 사운드 설정 */
-    .sound-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 14px;
-      padding-top: 14px;
-      border-top: 1px solid var(--border);
-    }
-    .sound-row label { font-size: 13px; color: var(--muted); white-space: nowrap; }
-    .sound-row input[type=file] {
-      flex: 1;
-      font-size: 12px;
-      color: var(--muted);
-      background: transparent;
-      border: none;
-      cursor: pointer;
-    }
-    .sound-row input[type=file]::file-selector-button {
-      background: var(--surface2);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 4px 10px;
-      font-size: 12px;
-      cursor: pointer;
-      margin-right: 8px;
-    }
-
     /* 닉네임 */
     .record-box {
       background: var(--surface);
@@ -325,38 +296,25 @@
   const lbTotal    = document.getElementById('lbTotal');
   const soundFile  = document.getElementById('soundFile');
 
-  // 소리 파일 로드
-  soundFile.addEventListener('change', () => {
-    const file = soundFile.files[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    audioEl = new Audio(url);
-  });
 
-  function playDone() {
-    if (audioEl) {
-      audioEl.currentTime = 0;
-      audioEl.play().catch(() => {});
-      return;
-    }
-    // 소리 파일 없으면 Web Audio 비프음
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const beep = (freq, start, dur) => {
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.connect(g); g.connect(ctx.destination);
-        o.frequency.value = freq;
-        g.gain.setValueAtTime(0.3, ctx.currentTime + start);
-        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
-        o.start(ctx.currentTime + start);
-        o.stop(ctx.currentTime + start + dur);
-      };
-      beep(880, 0, 0.3);
-      beep(1046, 0.35, 0.3);
-      beep(1318, 0.7, 0.6);
-    } catch(e) {}
-  }
+
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const beep = (freq, start, dur) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0.3, ctx.currentTime + start);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+      o.start(ctx.currentTime + start);
+      o.stop(ctx.currentTime + start + dur);
+    };
+    beep(880, 0, 0.3);
+    beep(1046, 0.35, 0.3);
+    beep(1318, 0.7, 0.6);
+  } catch(e) {}
+}
 
   function pad(n){ return String(n).padStart(2,'0'); }
   function fmt(s){ return pad(Math.floor(s/60))+':'+pad(s%60); }
