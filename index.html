@@ -396,46 +396,99 @@
     }
   }
 
-  // ── 기록 등록 (닉네임 기억 + 자동저장) ─────────────────
-  function submitRecord(){
+  // ── Firebase 설정 ──────────────────────────────────────
+  const FB_URL = 'https://rice-cooker-bef93-default-rtdb.asia-southeast1.firebasedatabase.app';
+
+  // ── UUID 생성 / 불러오기 ────────────────────────────────
+  function getOrCreateUUID() {
+    let uid = localStorage.getItem('rice_user_uuid');
+    if (!uid) {
+      uid = 'u-' + Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('rice_user_uuid', uid);
+    }
+    return uid;
+  }
+  const myUUID = getOrCreateUUID();
+
+  // ── Firebase REST helpers ───────────────────────────────
+  async function fbGet(path) {
+    try {
+      const res = await fetch(`${FB_URL}/${path}.json`);
+      return await res.json();
+    } catch(e) { return null; }
+  }
+  async function fbSet(path, data) {
+    try {
+      await fetch(`${FB_URL}/${path}.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    } catch(e) {}
+  }
+  async function fbPatch(path, data) {
+    try {
+      await fetch(`${FB_URL}/${path}.json`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    } catch(e) {}
+  }
+
+  // ── 기록 등록 ──────────────────────────────────────────
+  async function submitRecord(){
     const name = document.getElementById('nicknameInput').value.trim();
     if(!name){ alert('닉네임을 입력해주세요!'); return; }
     myName = name;
-    localStorage.setItem('rice_my_name', name); // 닉네임 기억
+    localStorage.setItem('rice_my_name', name);
 
-    const data = loadData();
-    if(!data[name]) data[name] = 0;
-    data[name]++;
-    saveData(data);
+    // Firebase에서 현재 내 데이터 읽기
+    const existing = await fbGet(`ranking/${myUUID}`);
+    const currentCount = (existing && existing.count) ? existing.count : 0;
+
+    // 업데이트 (UUID를 키로, 닉네임+횟수 저장)
+    await fbSet(`ranking/${myUUID}`, {
+      name: name,
+      count: currentCount + 1,
+      updatedAt: Date.now()
+    });
 
     recordBox.classList.remove('visible');
     renderRanking();
   }
 
-  const STORAGE_KEY = 'rice_cooker_ranking_v1';
-  function loadData(){
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
-    catch(e){ return {}; }
-  }
-  function saveData(d){ localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+  // ── 랭킹 렌더링 ────────────────────────────────────────
+  async function renderRanking(){
+    lbList.innerHTML = '<div class="lb-empty">랭킹 불러오는 중...</div>';
+    lbTotal.textContent = '';
 
-  function renderRanking(){
-    const data = loadData();
-    const entries = Object.entries(data).sort((a,b)=>b[1]-a[1]);
-    if(entries.length === 0){
+    const data = await fbGet('ranking');
+    if (!data) {
       lbList.innerHTML = '<div class="lb-empty">아직 기록이 없어요. 첫 밥을 지어보세요!</div>';
-      lbTotal.textContent = '';
       return;
     }
-    const maxCount = entries[0][1];
-    const total = entries.reduce((s,[,c])=>s+c,0);
+
+    // {uuid: {name, count, updatedAt}} 형태를 배열로 변환
+    const entries = Object.entries(data)
+      .map(([uuid, v]) => ({ uuid, name: v.name || '?', count: v.count || 0 }))
+      .sort((a, b) => b.count - a.count);
+
+    if (entries.length === 0) {
+      lbList.innerHTML = '<div class="lb-empty">아직 기록이 없어요. 첫 밥을 지어보세요!</div>';
+      return;
+    }
+
+    const maxCount = entries[0].count;
+    const total = entries.reduce((s, e) => s + e.count, 0);
     lbTotal.textContent = `총 ${total}회`;
     const medals = ['🥇','🥈','🥉'];
-    lbList.innerHTML = entries.slice(0,10).map(([name, count], i) => {
-      const pct = maxCount > 0 ? Math.round(count/maxCount*100) : 0;
-      const rankClass = i<3 ? `top${i+1}` : '';
-      const rank = i<3 ? medals[i] : `${i+1}`;
-      const isMe = name === myName ? '<span class="my-badge">나</span>' : '';
+
+    lbList.innerHTML = entries.slice(0, 10).map(({ uuid, name, count }, i) => {
+      const pct = maxCount > 0 ? Math.round(count / maxCount * 100) : 0;
+      const rankClass = i < 3 ? `top${i+1}` : '';
+      const rank = i < 3 ? medals[i] : `${i+1}`;
+      const isMe = uuid === myUUID ? '<span class="my-badge">나</span>' : '';
       return `
         <div class="lb-row">
           <span class="lb-rank ${rankClass}">${rank}</span>
@@ -448,7 +501,7 @@
     }).join('');
   }
 
-  // 저장된 닉네임 미리 채우기
+  // ── 초기화 ─────────────────────────────────────────────
   const savedName = localStorage.getItem('rice_my_name') || '';
   if(savedName) { myName = savedName; document.getElementById('nicknameInput').value = savedName; }
 
