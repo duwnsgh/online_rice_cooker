@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>밥솥 키우기</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0f0e0c; --surface:#1a1815; --surface2:#232018;
+  --border:#35302a; --accent:#e8a020; --text:#f0ebe0;
+  --muted:#7a7060; --danger:#c0392b; --success:#4a9940; --orange:#ff9500;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.5;}
+
+/* NAV */
+.site-nav{position:fixed;top:0;left:0;right:0;z-index:9000;display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:rgba(15,14,12,0.92);backdrop-filter:blur(14px);border-bottom:1px solid rgba(232,160,32,0.12);}
+.nav-brand{font-family:'Black Han Sans',sans-serif;font-size:1rem;color:var(--accent);text-decoration:none;letter-spacing:0.04em;}
+.nav-tabs{display:flex;gap:6px;}
+.nav-tab{padding:6px 14px;border-radius:20px;font-size:0.8rem;font-weight:700;text-decoration:none;transition:all .2s;border:1.5px solid transparent;}
+.nav-tab.on{background:var(--accent);color:#1a0f00;}
+.nav-tab.off{border-color:rgba(232,160,32,0.25);color:var(--muted);}
+.nav-tab.off:hover{border-color:var(--accent);color:var(--accent);}
+
+/* LAYOUT */
+.game-wrap{display:grid;grid-template-columns:1fr 300px;min-height:100vh;padding-top:52px;position:relative;z-index:1;}
+@media(max-width:720px){.game-wrap{grid-template-columns:1fr;}.sidebar{border-left:none;border-top:1px solid var(--border);position:static;height:auto;}}
+
+/* MAIN */
+.main-area{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;gap:20px;}
+
+/* COUNTER */
+.counter-block{text-align:center;}
+.count-num{font-family:'Black Han Sans',sans-serif;font-size:clamp(2.2rem,6vw,3.6rem);color:var(--accent);line-height:1;text-shadow:0 0 30px rgba(232,160,32,.3);}
+.count-label{font-size:.9rem;color:var(--muted);margin-top:4px;}
+.count-rps{font-size:.8rem;color:var(--orange);margin-top:2px;}
+
+/* POT */
+.pot-wrap{position:relative;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;}
+.pot-wrap:active .pot-svg{transform:scale(.94);}
+.pot-svg{transition:transform .12s;}
+
+/* STEAM */
+.steam-box{position:absolute;top:-52px;left:50%;transform:translateX(-50%);width:100px;height:52px;pointer-events:none;}
+.sp{position:absolute;bottom:0;width:14px;height:14px;border-radius:50%;background:rgba(220,215,200,.6);opacity:0;animation:sp 2s ease-out infinite;}
+.sp:nth-child(1){left:18%;} .sp:nth-child(2){left:46%;animation-delay:.65s;} .sp:nth-child(3){left:74%;animation-delay:1.3s;}
+@keyframes sp{0%{transform:translateY(0) scale(1);opacity:.7;}100%{transform:translateY(-44px) scale(2.4);opacity:0;}}
+
+/* POT INFO */
+.pot-info{text-align:center;}
+.pot-lv{font-family:'Black Han Sans',sans-serif;font-size:1.1rem;color:var(--orange);}
+.pot-sub{font-size:.8rem;color:var(--muted);margin-top:2px;}
+
+/* PARTICLE */
+.ptcl{position:fixed;pointer-events:none;font-family:'Black Han Sans',sans-serif;font-size:1.1rem;color:var(--accent);z-index:8888;animation:ptcl .85s ease-out forwards;}
+@keyframes ptcl{0%{transform:translateY(0) scale(1);opacity:1;}100%{transform:translateY(-72px) scale(.5);opacity:0;}}
+
+/* SIDEBAR */
+.sidebar{background:var(--surface);border-left:1px solid var(--border);overflow-y:auto;height:calc(100vh - 52px);position:sticky;top:52px;}
+.sidebar::-webkit-scrollbar{width:3px;}.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.sb-sec{padding:16px 14px;border-bottom:1px solid rgba(255,255,255,.04);}
+.sb-title{font-family:'Black Han Sans',sans-serif;font-size:.85rem;color:var(--accent);letter-spacing:.05em;margin-bottom:10px;}
+
+/* UPGRADE */
+.upg-card{background:var(--surface2);border:1.5px solid rgba(232,160,32,.08);border-radius:10px;padding:10px 12px;margin-bottom:7px;cursor:pointer;transition:all .18s;}
+.upg-card:hover{border-color:rgba(232,160,32,.25);transform:translateX(2px);}
+.upg-card.can{border-color:rgba(232,160,32,.35);}
+.upg-card.maxed{opacity:.4;cursor:default;}.upg-card.maxed:hover{transform:none;}
+.upg-head{display:flex;justify-content:space-between;margin-bottom:3px;}
+.upg-name{font-size:.84rem;font-weight:700;}.upg-lv{font-size:.7rem;color:var(--muted);}
+.upg-desc{font-size:.73rem;color:var(--muted);margin-bottom:5px;}
+.upg-cost{font-size:.78rem;font-weight:700;color:var(--accent);}.upg-cost.g{color:var(--muted);}
+
+/* PRODUCER */
+.prod-card{background:var(--surface2);border:1.5px solid rgba(232,160,32,.06);border-radius:10px;padding:10px 12px;margin-bottom:7px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .18s;}
+.prod-card:hover{border-color:rgba(232,160,32,.22);transform:translateX(2px);}
+.prod-card.can{border-color:rgba(232,160,32,.32);}
+.prod-icon{font-size:1.5rem;flex-shrink:0;}.prod-info{flex:1;min-width:0;}
+.prod-name{font-size:.83rem;font-weight:700;}.prod-desc{font-size:.7rem;color:var(--muted);}
+.prod-right{text-align:right;flex-shrink:0;}
+.prod-cnt{font-family:'Black Han Sans',sans-serif;font-size:1.1rem;color:var(--orange);}
+.prod-cost{font-size:.73rem;color:var(--accent);}.prod-cost.g{color:var(--muted);}
+
+/* LEADERBOARD */
+.lb-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.lb-row:last-child{border-bottom:none;}
+.lb-rank{width:24px;font-family:'Black Han Sans',sans-serif;font-size:.9rem;color:var(--muted);text-align:center;}
+.lb-rank.gd{color:#f0c030;}.lb-rank.sv{color:#b0b8c0;}.lb-rank.bz{color:#c08840;}
+.lb-name{flex:1;font-size:.83rem;font-weight:500;}
+.lb-score{font-family:'Black Han Sans',sans-serif;font-size:.95rem;color:var(--accent);}
+.lb-unit{font-size:.68rem;color:var(--muted);}
+.my-badge{font-size:.68rem;background:rgba(232,160,32,.15);color:var(--accent);border-radius:3px;padding:1px 5px;margin-left:4px;}
+.lb-empty{font-size:.8rem;color:var(--muted);text-align:center;padding:12px 0;}
+
+/* NICK */
+.nick-panel{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;}
+.nick-panel label{font-size:.76rem;color:var(--muted);display:block;margin-bottom:8px;}
+.nick-row{display:flex;gap:6px;}
+.nick-row input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:.83rem;outline:none;}
+.nick-row input:focus{border-color:var(--accent);}
+.nick-row button{background:var(--accent);color:#1a0f00;border:none;border-radius:8px;padding:9px 14px;font-family:'Black Han Sans',sans-serif;font-size:.85rem;cursor:pointer;}
+.nick-row button:hover{opacity:.85;}
+
+/* ACH */
+.ach-item{font-size:.77rem;line-height:1.9;display:inline-block;margin-right:6px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--accent);color:#1a0f00;padding:9px 18px;border-radius:24px;font-weight:700;font-size:.88rem;z-index:9999;white-space:nowrap;transition:transform .38s cubic-bezier(.175,.885,.32,1.275);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <a class="nav-brand" href="index.html">🍚 밥솥 온라인</a>
+  <div class="nav-tabs">
+    <a class="nav-tab off" href="index.html">밥솥 시뮬레이터</a>
+    <a class="nav-tab on"  href="clicker.html">밥솥 키우기</a>
+  </div>
+</nav>
+
+<div class="game-wrap">
+  <div class="main-area">
+    <div class="counter-block">
+      <div class="count-num" id="countNum">0</div>
+      <div class="count-label">🍚 밥알</div>
+      <div class="count-rps" id="countRps">초당 +0 밥알</div>
+    </div>
+
+    <div class="pot-wrap" id="potBtn">
+      <div class="steam-box"><div class="sp"></div><div class="sp"></div><div class="sp"></div></div>
+
+      <svg class="pot-svg" width="220" height="220" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="bG" cx="38%" cy="35%" r="65%"><stop offset="0%" stop-color="#7a4d1a"/><stop offset="100%" stop-color="#3d2200"/></radialGradient>
+          <radialGradient id="lG" cx="40%" cy="30%" r="70%"><stop offset="0%" stop-color="#6b3c00"/><stop offset="100%" stop-color="#3a1e00"/></radialGradient>
+          <filter id="glow"><feGaussianBlur stdDeviation="3.5" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>
+        </defs>
+        <!-- shadow -->
+        <ellipse cx="110" cy="202" rx="68" ry="9" fill="#000" opacity=".45"/>
+        <!-- body -->
+        <path d="M42 108 Q42 178 110 178 Q178 178 178 108 L178 98 Q178 70 110 70 Q42 70 42 98 Z" fill="url(#bG)"/>
+        <ellipse cx="110" cy="98" rx="68" ry="14" fill="#5c3500"/>
+        <ellipse cx="110" cy="96" rx="65" ry="12" fill="#6b3c00"/>
+        <!-- lid -->
+        <path d="M44 90 Q44 73 110 73 Q176 73 176 90" fill="#5a3200"/>
+        <ellipse cx="110" cy="90" rx="66" ry="13" fill="url(#lG)"/>
+        <ellipse cx="110" cy="90" rx="66" ry="13" fill="none" stroke="#7a4800" stroke-width="1.2"/>
+        <!-- handle top -->
+        <ellipse cx="110" cy="77" rx="18" ry="6" fill="#7a4800"/>
+        <ellipse cx="110" cy="75" rx="12" ry="4.5" fill="#b07020"/>
+        <ellipse cx="110" cy="74" rx="7" ry="3" fill="#d09030"/>
+        <!-- shine -->
+        <ellipse cx="76" cy="96" rx="15" ry="6" fill="rgba(255,210,100,.1)" transform="rotate(-18,76,96)"/>
+        <!-- side handles -->
+        <path d="M40 118 Q26 118 24 132 Q22 144 36 144 L42 141" stroke="#4a2800" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M180 118 Q194 118 196 132 Q198 144 184 144 L178 141" stroke="#4a2800" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M40 118 Q26 118 24 132 Q22 144 36 144 L42 141" stroke="#6b3c00" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M180 118 Q194 118 196 132 Q198 144 184 144 L178 141" stroke="#6b3c00" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <!-- panel -->
+        <rect x="76" y="138" width="68" height="30" rx="7" fill="#1e1000"/>
+        <rect x="78" y="140" width="64" height="26" rx="6" fill="#2a1500"/>
+        <circle id="led" cx="91" cy="153" r="5.5" fill="#333"/>
+        <rect x="101" y="146" width="34" height="4" rx="2" fill="#1a0a00"/>
+        <rect x="101" y="153" width="26" height="4" rx="2" fill="#1a0a00"/>
+        <rect x="101" y="160" width="30" height="4" rx="2" fill="#1a0a00"/>
+        <!-- level deco layers -->
+        <g id="dSilver" style="display:none">
+          <ellipse cx="110" cy="90" rx="66" ry="13" fill="none" stroke="rgba(180,190,210,.28)" stroke-width="1.5"/>
+          <circle cx="155" cy="90" r="3" fill="rgba(180,190,210,.35)"/>
+          <circle cx="65" cy="90" r="3" fill="rgba(180,190,210,.35)"/>
+        </g>
+        <g id="dGold" style="display:none">
+          <ellipse cx="110" cy="90" rx="66" ry="13" fill="none" stroke="rgba(255,209,50,.4)" stroke-width="2"/>
+          <circle cx="155" cy="90" r="4" fill="rgba(255,209,50,.5)"/>
+          <circle cx="65" cy="90" r="4" fill="rgba(255,209,50,.5)"/>
+          <circle cx="110" cy="75" r="3.5" fill="rgba(255,209,50,.55)"/>
+        </g>
+        <g id="dLegend" style="display:none">
+          <ellipse cx="110" cy="90" rx="66" ry="13" fill="none" stroke="rgba(255,120,0,.55)" stroke-width="2.5" filter="url(#glow)"/>
+          <circle cx="155" cy="90" r="5" fill="rgba(255,140,0,.65)" filter="url(#glow)"/>
+          <circle cx="65" cy="90" r="5" fill="rgba(255,140,0,.65)" filter="url(#glow)"/>
+          <circle cx="110" cy="75" r="4.5" fill="rgba(255,160,0,.7)" filter="url(#glow)"/>
+          <ellipse cx="110" cy="90" rx="66" ry="13" fill="rgba(255,100,0,.04)"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="pot-info">
+      <div class="pot-lv" id="potLv">Lv.1 — 일반 밥솥</div>
+      <div class="pot-sub" id="potSub">클릭당 +1 밥알</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="sb-sec"><div class="sb-title">⚡ 업그레이드</div><div id="upgList"></div></div>
+    <div class="sb-sec"><div class="sb-title">🏭 자동 생산</div><div id="prodList"></div></div>
+    <div class="sb-sec">
+      <div class="sb-title">🏆 취사 랭킹 <span style="font-size:.7rem;font-weight:400;color:var(--muted)">(시뮬레이터)</span></div>
+      <div id="simLb"><div class="lb-empty">불러오는 중…</div></div>
+    </div>
+    <div class="sb-sec">
+      <div class="sb-title">📋 내 기록 등록</div>
+      <div class="nick-panel">
+        <label>닉네임을 입력하면 밥알 기록이 저장됩니다.</label>
+        <div class="nick-row">
+          <input id="nickInput" type="text" placeholder="닉네임 (최대 12자)" maxlength="12"/>
+          <button onclick="submitClicker()">등록</button>
+        </div>
+      </div>
+      <div id="clickerLb"><div class="lb-empty">불러오는 중…</div></div>
+    </div>
+    <div class="sb-sec"><div class="sb-title">🎖 업적</div><div id="achList"></div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Firebase ──────────────────────────────────────────
+const FB='https://rice-cooker-bef93-default-rtdb.asia-southeast1.firebasedatabase.app';
+const fbGet=async p=>{try{return await(await fetch(`${FB}/${p}.json`)).json();}catch{return null;}};
+const fbSet=async(p,d)=>{try{await fetch(`${FB}/${p}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});}catch{}};
+function getUUID(){let u=localStorage.getItem('rice_user_uuid');if(!u){u='u-'+Date.now().toString(36)+'-'+Math.random().toString(36).substr(2,9);localStorage.setItem('rice_user_uuid',u);}return u;}
+const MY_UUID=getUUID();
+
+// ── 상태 ─────────────────────────────────────────────
+const G={rice:0,total:0,clickPow:1,rps:0,prodMul:1};
+
+const UPGRADES=[
+  {id:'u1',name:'좋은 쌀',     desc:'클릭당 +2',       cost:50,   max:5,lv:0,fn:()=>{G.clickPow+=2;}},
+  {id:'u2',name:'화력 강화',   desc:'클릭당 +5',       cost:200,  max:5,lv:0,fn:()=>{G.clickPow+=5;}},
+  {id:'u3',name:'증기 조절',   desc:'자동생산 ×1.5',   cost:500,  max:3,lv:0,fn:()=>mP(1.5)},
+  {id:'u4',name:'터보 화력',   desc:'클릭당 +20',      cost:2000, max:3,lv:0,fn:()=>{G.clickPow+=20;}},
+  {id:'u5',name:'스마트 밥솥', desc:'자동생산 ×2',     cost:5000, max:2,lv:0,fn:()=>mP(2)},
+  {id:'u6',name:'황금 쌀',     desc:'클릭당 +100',     cost:20000,max:3,lv:0,fn:()=>{G.clickPow+=100;}},
+];
+const PRODUCERS=[
+  {id:'p1',name:'수습 주방장', icon:'👨‍🍳',desc:'혼자 밥 짓는 중…',  base:15,   cnt:0,bRps:.1},
+  {id:'p2',name:'증기 발생기',icon:'💨',desc:'쉬지 않고 김 낸다', base:100,  cnt:0,bRps:.5},
+  {id:'p3',name:'대형 밥솥',  icon:'🍲',desc:'한 번에 10인분',    base:500,  cnt:0,bRps:2},
+  {id:'p4',name:'쌀 농장',    icon:'🌾',desc:'직접 쌀을 재배',   base:2000, cnt:0,bRps:8},
+  {id:'p5',name:'밥솥 공장',  icon:'🏭',desc:'자동화의 극치',    base:8000, cnt:0,bRps:25},
+  {id:'p6',name:'우주 밥솥',  icon:'🚀',desc:'중력도 맛을 모른다',base:40000,cnt:0,bRps:100},
+];
+const mP=m=>{G.prodMul*=m;rRps();};
+const rRps=()=>{G.rps=PRODUCERS.reduce((s,p)=>s+p.cnt*p.bRps*G.prodMul,0);};
+const pC=p=>Math.floor(p.base*Math.pow(1.15,p.cnt));
+const uC=u=>Math.floor(u.cost*Math.pow(1.8,u.lv));
+
+const POT_LVS=[
+  {min:0,      name:'일반 밥솥',  deco:null},
+  {min:500,    name:'압력 밥솥',  deco:null},
+  {min:3000,   name:'IH 밥솥',    deco:'dSilver'},
+  {min:20000,  name:'스마트 밥솥',deco:'dSilver'},
+  {min:100000, name:'황금 밥솥',  deco:'dGold'},
+  {min:500000, name:'전설의 밥솥',deco:'dLegend'},
+];
+function getPotLv(){let l=0;POT_LVS.forEach((p,i)=>{if(G.total>=p.min)l=i;});return{lv:l+1,...POT_LVS[l]};}
+
+// ── 업적 ─────────────────────────────────────────────
+const ACHS=[
+  {id:'a1',name:'첫 밥알',     chk:()=>G.total>=1,       done:false},
+  {id:'a2',name:'100알 달성',  chk:()=>G.total>=100,     done:false},
+  {id:'a3',name:'천알의 행진', chk:()=>G.total>=1000,    done:false},
+  {id:'a4',name:'만알의 꿈',   chk:()=>G.total>=10000,   done:false},
+  {id:'a5',name:'십만알 황금', chk:()=>G.total>=100000,  done:false},
+  {id:'a6',name:'백만 밥알',   chk:()=>G.total>=1000000, done:false},
+  {id:'a7',name:'첫 고용',     chk:()=>PRODUCERS.some(p=>p.cnt>=1), done:false},
+  {id:'a8',name:'소규모 공장', chk:()=>PRODUCERS.reduce((s,p)=>s+p.cnt,0)>=10, done:false},
+];
+const chkAch=()=>{ACHS.forEach(a=>{if(!a.done&&a.chk()){a.done=true;showToast('🎖 업적: '+a.name);renderAch();}});};
+
+// ── 포맷 ─────────────────────────────────────────────
+const fmt=n=>{if(n>=1e9)return(n/1e9).toFixed(2)+'B';if(n>=1e6)return(n/1e6).toFixed(2)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return Math.floor(n).toLocaleString();};
+
+// ── 렌더 ─────────────────────────────────────────────
+function renderHUD(){
+  document.getElementById('countNum').textContent=fmt(G.rice);
+  document.getElementById('countRps').textContent=`초당 +${fmt(G.rps)} 밥알`;
+  const p=getPotLv();
+  document.getElementById('potLv').textContent=`Lv.${p.lv} — ${p.name}`;
+  document.getElementById('potSub').textContent=`클릭당 +${fmt(G.clickPow)} 밥알`;
+  ['dSilver','dGold','dLegend'].forEach(id=>document.getElementById(id).style.display='none');
+  if(p.deco)document.getElementById(p.deco).style.display='';
+}
+function renderUpg(){
+  document.getElementById('upgList').innerHTML=UPGRADES.map(u=>{
+    if(u.lv>=u.max)return`<div class="upg-card maxed"><div class="upg-head"><span class="upg-name">${u.name}</span><span class="upg-lv">MAX</span></div><div class="upg-desc">${u.desc}</div></div>`;
+    const c=uC(u),can=G.rice>=c;
+    return`<div class="upg-card ${can?'can':''}" onclick="buyUpg('${u.id}')"><div class="upg-head"><span class="upg-name">${u.name}</span><span class="upg-lv">Lv.${u.lv}/${u.max}</span></div><div class="upg-desc">${u.desc}</div><div class="upg-cost ${can?'':'g'}">🍚 ${fmt(c)}</div></div>`;
+  }).join('');
+}
+function renderProd(){
+  document.getElementById('prodList').innerHTML=PRODUCERS.map(p=>{
+    const c=pC(p),can=G.rice>=c;
+    return`<div class="prod-card ${can?'can':''}" onclick="buyProd('${p.id}')"><div class="prod-icon">${p.icon}</div><div class="prod-info"><div class="prod-name">${p.name}</div><div class="prod-desc">${p.desc} · 초당 ${(p.bRps*G.prodMul).toFixed(2)}</div></div><div class="prod-right"><div class="prod-cnt">${p.cnt}</div><div class="prod-cost ${can?'':'g'}">🍚 ${fmt(c)}</div></div></div>`;
+  }).join('');
+}
+function renderAch(){
+  document.getElementById('achList').innerHTML=ACHS.map(a=>`<span class="ach-item" style="color:${a.done?'var(--accent)':'var(--muted)'}">${a.done?'🎖':'⬜'} ${a.name}</span>`).join('');
+}
+function render(){renderHUD();renderUpg();renderProd();}
+
+// ── 구매 ─────────────────────────────────────────────
+function buyUpg(id){const u=UPGRADES.find(x=>x.id===id);if(!u||u.lv>=u.max)return;const c=uC(u);if(G.rice<c)return;G.rice-=c;u.lv++;u.fn();render();}
+function buyProd(id){const p=PRODUCERS.find(x=>x.id===id);if(!p)return;const c=pC(p);if(G.rice<c)return;G.rice-=c;p.cnt++;rRps();render();chkAch();}
+
+// ── 클릭 ─────────────────────────────────────────────
+document.getElementById('potBtn').addEventListener('click',e=>{
+  G.rice+=G.clickPow; G.total+=G.clickPow;
+  spawnPtcl(e.clientX,e.clientY,'+'+fmt(G.clickPow));
+  chkAch(); render();
+});
+function spawnPtcl(x,y,t){const d=document.createElement('div');d.className='ptcl';d.textContent=t;d.style.left=(x-18+Math.random()*36)+'px';d.style.top=(y-10)+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),850);}
+
+// ── LED 점멸 ─────────────────────────────────────────
+setInterval(()=>{const l=document.getElementById('led');if(G.rps>0)l.setAttribute('fill',l.getAttribute('fill')==='#c0392b'?'#ff5a47':'#c0392b');else l.setAttribute('fill','#333');},700);
+
+// ── 토스트 ───────────────────────────────────────────
+let _tt;
+function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2800);}
+
+// ── Firebase 랭킹 ─────────────────────────────────────
+const medals=['🥇','🥈','🥉'];
+function lbRow(i,uuid,name,score,unit){
+  const cls=i<3?['gd','sv','bz'][i]:'';
+  const rank=i<3?medals[i]:`${i+1}`;
+  const isMe=uuid===MY_UUID?'<span class="my-badge">나</span>':'';
+  return`<div class="lb-row"><span class="lb-rank ${cls}">${rank}</span><span class="lb-name">${name}${isMe}</span><span class="lb-score">${score}</span><span class="lb-unit">${unit}</span></div>`;
+}
+
+async function renderSimLb(){
+  const data=await fbGet('ranking');
+  const el=document.getElementById('simLb');
+  if(!data){el.innerHTML='<div class="lb-empty">기록 없음</div>';return;}
+  const entries=Object.entries(data).map(([uuid,v])=>({uuid,name:v.name||'?',count:v.count||0})).sort((a,b)=>b.count-a.count).slice(0,5);
+  if(!entries.length){el.innerHTML='<div class="lb-empty">기록 없음</div>';return;}
+  el.innerHTML=entries.map(({uuid,name,count},i)=>lbRow(i,uuid,name,count,'회')).join('');
+}
+
+async function renderClickerLb(){
+  const data=await fbGet('clicker_ranking');
+  const el=document.getElementById('clickerLb');
+  if(!data){el.innerHTML='<div class="lb-empty">아직 기록 없음</div>';return;}
+  const entries=Object.entries(data).map(([uuid,v])=>({uuid,name:v.name||'?',score:v.score||0})).sort((a,b)=>b.score-a.score).slice(0,10);
+  if(!entries.length){el.innerHTML='<div class="lb-empty">아직 기록 없음</div>';return;}
+  el.innerHTML=entries.map(({uuid,name,score},i)=>lbRow(i,uuid,name,fmt(score),'알')).join('');
+}
+
+async function submitClicker(){
+  const name=document.getElementById('nickInput').value.trim();
+  if(!name){alert('닉네임 입력해주세요!');return;}
+  localStorage.setItem('rice_my_name',name);
+  await fbSet(`clicker_ranking/${MY_UUID}`,{name,score:Math.floor(G.total),updatedAt:Date.now()});
+  showToast('✅ 기록 등록: '+fmt(G.total)+' 밥알');
+  renderClickerLb();
+}
+
+// ── 저장/불러오기 ─────────────────────────────────────
+function save(){localStorage.setItem('riceClicker',JSON.stringify({rice:G.rice,total:G.total,clickPow:G.clickPow,prodMul:G.prodMul,upgs:UPGRADES.map(u=>u.lv),prods:PRODUCERS.map(p=>p.cnt)}));}
+function load(){
+  try{
+    const s=JSON.parse(localStorage.getItem('riceClicker')||'null');if(!s)return;
+    G.rice=s.rice||0;G.total=s.total||0;G.clickPow=s.clickPow||1;G.prodMul=s.prodMul||1;
+    s.upgs?.forEach((lv,i)=>{if(UPGRADES[i])UPGRADES[i].lv=lv;});
+    s.prods?.forEach((cnt,i)=>{if(PRODUCERS[i])PRODUCERS[i].cnt=cnt;});
+    rRps();
+  }catch{}
+}
+setInterval(save,5000);
+
+// ── 게임 루프 ─────────────────────────────────────────
+let lastT=performance.now();
+function loop(now){const dt=(now-lastT)/1000;lastT=now;if(G.rps>0){const g=G.rps*dt;G.rice+=g;G.total+=g;}renderHUD();chkAch();requestAnimationFrame(loop);}
+setInterval(render,1200);
+
+// ── 초기화 ───────────────────────────────────────────
+load();
+const sn=localStorage.getItem('rice_my_name')||'';
+if(sn)document.getElementById('nickInput').value=sn;
+renderAch();render();
+renderSimLb();renderClickerLb();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
