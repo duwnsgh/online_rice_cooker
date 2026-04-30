@@ -6,6 +6,13 @@
   <title>온라인 전기밥솥</title>
   <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
   <style>
+    .site-nav{position:fixed;top:0;left:0;right:0;z-index:9000;display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:rgba(15,14,12,0.92);backdrop-filter:blur(14px);border-bottom:1px solid rgba(232,160,32,0.12);}
+    .nav-brand{font-family:'Black Han Sans',sans-serif;font-size:1rem;color:#e8a020;text-decoration:none;letter-spacing:0.04em;}
+    .nav-tabs{display:flex;gap:6px;}
+    .nav-tab{padding:6px 14px;border-radius:20px;font-size:0.8rem;font-weight:700;text-decoration:none;transition:all .2s;border:1.5px solid transparent;}
+    .nav-tab.on{background:#e8a020;color:#1a0f00;}
+    .nav-tab.off{border-color:rgba(232,160,32,0.25);color:#7a7060;}
+    .nav-tab.off:hover{border-color:#e8a020;color:#e8a020;}
     :root {
       --bg: #0f0e0c;
       --surface: #1a1815;
@@ -26,7 +33,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 40px 16px 80px;
+      padding: 92px 16px 80px;
     }
     body::before {
       content: '';
@@ -242,7 +249,13 @@
   </style>
 </head>
 <body>
-
+<nav class="site-nav">
+  <a class="nav-brand" href="index.html">🍚 밥솥 온라인</a>
+  <div class="nav-tabs">
+    <a class="nav-tab on" href="index.html">밥솥 시뮬레이터</a>
+    <a class="nav-tab off"  href="clicker.html">밥솥 키우기</a>
+  </div>
+</nav>
 <!-- 초기 세션 복원 중 로딩 화면 -->
 <div id="loadingOverlay">밥솥 연결 중...</div>
 
