@@ -367,12 +367,15 @@ const UPGRADES = [
 
 // ── 생산자 ────────────────────────────────────────────────────────────────
 const PRODUCERS = [
-  { id:'p1', name:'수습 주방장', icon:'👨‍🍳', desc:'혼자 밥 짓는 중…',   base:15,    cnt:0, bRps:.1  },
-  { id:'p2', name:'증기 발생기', icon:'💨',   desc:'쉬지 않고 김 낸다',  base:100,   cnt:0, bRps:.5  },
-  { id:'p3', name:'대형 밥솥',   icon:'🍲',   desc:'한 번에 10인분',     base:500,   cnt:0, bRps:2   },
-  { id:'p4', name:'쌀 농장',     icon:'🌾',   desc:'직접 쌀을 재배',     base:2000,  cnt:0, bRps:8   },
-  { id:'p5', name:'밥솥 공장',   icon:'🏭',   desc:'자동화의 극치',      base:8000,  cnt:0, bRps:25  },
-  { id:'p6', name:'우주 밥솥',   icon:'🚀',   desc:'중력도 맛을 모른다', base:40000, cnt:0, bRps:100 },
+  { id:'p1', name:'쌀숭이', icon:'🐒', desc:'우우우 쌀쌀쌀',   base:15,    cnt:0, bRps:.1  },
+  { id:'p2', name:'증기 기관', icon:'💨',   desc:'증기 배출이 시작됩니다.',  base:100,   cnt:0, bRps:.5  },
+  { id:'p3', name:'가마솥',   icon:'🍲',   desc:'시골의 그맛',     base:500,   cnt:0, bRps:2   },
+  { id:'p4', name:'논밭',     icon:'🌾',   desc:'논두렁입니다.',     base:2000,  cnt:0, bRps:8   },
+  { id:'p5', name:'밥솥 공장',   icon:'🏭',   desc:'쿠쿠 본사입니다.',      base:8000,  cnt:0, bRps:25  },
+  { id:'p6', name:'밥의 국가',   icon:'⚪',   desc:'오직 밥만을 위한 지배령입니다.', base:40000, cnt:0, bRps:100 },
+  { id:'p7', name:'쌀융합',   icon:'☢️',   desc:'핵 에너지로 쌀을 제조합니다.', base:240000, cnt:0, bRps:400 },
+  { id:'p8', name:'쌀리 커크',   icon:'🧑🏻',   desc:'위 얼 쌀리 커크~~', base:1000000, cnt:0, bRps:1600 },
+  { id:'p9', name:'다이슨 밥솥-스피어',   icon:'☀️',   desc:'우주 궤도의 초거대 밥솥입니다.', base:8000000, cnt:0, bRps:8000 },
 ];
 
 const mP = m => { G.prodMul *= m; rRps(); };
@@ -384,18 +387,18 @@ const uC = u => Math.floor(u.cost * Math.pow(1.8, u.lv));
 const POT_LVS = [
   { min:0,       name:'일반 밥솥',   deco:null      },
   { min:500,     name:'압력 밥솥',   deco:null      },
-  { min:3000,    name:'IH 밥솥',     deco:'dSilver' },
+  { min:3000,    name:'초고압 밥솥',     deco:'dSilver' },
   { min:20000,   name:'스마트 밥솥', deco:'dSilver' },
   { min:100000,  name:'황금 밥솥',   deco:'dGold'   },
-  { min:500000,  name:'전설의 밥솥', deco:'dLegend' },
+  { min:500000,  name:'레전더리 밥솥', deco:'dLegend' },
 ];
 function getPotLv() { let l = 0; POT_LVS.forEach((p, i) => { if (G.total >= p.min) l = i; }); return { lv: l + 1, ...POT_LVS[l] }; }
 
 // ── 업적 ─────────────────────────────────────────────────────────────────
 const ACHS = [
   { id:'a1',  name:'첫 밥알',      icon:'🌱', chk:()=>G.total>=1,                                         done:false },
-  { id:'a2',  name:'100알 달성',   icon:'🍚', chk:()=>G.total>=100,                                        done:false },
-  { id:'a3',  name:'천알의 행진',  icon:'🏃', chk:()=>G.total>=1000,                                       done:false },
+  { id:'a2',  name:'100개의 밥알',   icon:'🍚', chk:()=>G.total>=100,                                        done:false },
+  { id:'a3',  name:'한 공기',  icon:'🏃', chk:()=>G.total>=4000,                                       done:false },
   { id:'a4',  name:'만알의 꿈',    icon:'✨', chk:()=>G.total>=10000,                                      done:false },
   { id:'a5',  name:'십만알 황금',  icon:'🌟', chk:()=>G.total>=100000,                                     done:false },
   { id:'a6',  name:'백만 밥알',    icon:'💫', chk:()=>G.total>=1000000,                                    done:false },
