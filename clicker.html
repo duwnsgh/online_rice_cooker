@@ -1,734 +1,133 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>밥솥 키우기</title>
-<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#0f0e0c;--surface:#1a1815;--surface2:#232018;
-  --border:#35302a;--accent:#e8a020;--text:#f0ebe0;
-  --muted:#7a7060;--danger:#c0392b;--success:#4a9940;--orange:#ff9500;
-  --nav-h:52px;--tab-h:62px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.5;}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>서버 점검 안내</title>
+  <style>
+    :root{
+      --bg:#0f0e0c;
+      --surface:#1a1815;
+      --border:#35302a;
+      --accent:#e8a020;
+      --text:#f0ebe0;
+      --muted:#7a7060;
+    }
 
-/* NAV */
-.site-nav{position:fixed;top:0;left:0;right:0;z-index:9000;display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:var(--nav-h);background:rgba(15,14,12,.95);backdrop-filter:blur(14px);border-bottom:1px solid rgba(232,160,32,.12);}
-.nav-brand{font-family:'Black Han Sans',sans-serif;font-size:.95rem;color:var(--accent);text-decoration:none;letter-spacing:.04em;}
-.nav-tabs{display:flex;gap:6px;}
-.nav-tab{padding:5px 11px;border-radius:20px;font-size:.76rem;font-weight:700;text-decoration:none;transition:all .2s;border:1.5px solid transparent;}
-.nav-tab.on{background:var(--accent);color:#1a0f00;}
-.nav-tab.off{border-color:rgba(232,160,32,.25);color:var(--muted);}
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
 
-/* ── BASE PANEL VISIBILITY ── */
-.p-main{display:none;}
-.p-side{display:none;}
+    body{
+      background:var(--bg);
+      color:var(--text);
+      font-family:'Noto Sans KR',sans-serif;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      overflow:hidden;
+    }
 
-/* ── DESKTOP (≥721px) ── */
-@media(min-width:721px){
-  .game-wrap{display:grid;grid-template-columns:1fr 330px;min-height:calc(100vh - var(--nav-h));margin-top:var(--nav-h);}
-  .p-main{display:flex!important;flex-direction:column;align-items:center;justify-content:flex-start;gap:20px;padding:28px 20px 32px;overflow-y:auto;}
-  .sidebar-area{display:flex;flex-direction:column;border-left:1px solid var(--border);height:calc(100vh - var(--nav-h));position:sticky;top:var(--nav-h);overflow:hidden;}
-  .stabs{display:flex!important;border-bottom:1px solid var(--border);flex-shrink:0;}
-  .p-side.s-active{display:block;flex:1;overflow-y:auto;padding:14px;}
-  .p-side.s-active::-webkit-scrollbar{width:3px;}
-  .p-side.s-active::-webkit-scrollbar-thumb{background:var(--border);}
-  .m-tabs{display:none!important;}
-  .ach-fab{bottom:20px;}
-  .toast{bottom:22px;}
-}
+    body::before{
+      content:'';
+      position:fixed;
+      inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity:.45;
+      pointer-events:none;
+    }
 
-/* ── MOBILE (≤720px) ── */
-@media(max-width:720px){
-  .game-wrap{display:block;margin-top:var(--nav-h);padding-bottom:var(--tab-h);}
-  .sidebar-area{display:block;}
-  .stabs{display:none!important;}
-  .p-main.m-active{display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 16px 24px;min-height:calc(100vh - var(--nav-h) - var(--tab-h));}
-  .p-side.m-active{display:block;padding:14px;min-height:calc(100vh - var(--nav-h) - var(--tab-h));}
-  .m-tabs{display:flex!important;}
-  .ach-fab{bottom:72px;}
-  .toast{bottom:72px;}
-}
+    .panel{
+      width:100%;
+      max-width:560px;
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:24px;
+      padding:42px 32px;
+      text-align:center;
+      position:relative;
+      z-index:1;
+      box-shadow:0 20px 60px rgba(0,0,0,.45);
+    }
 
-/* SIDEBAR TAB BUTTONS */
-.stabs{background:var(--surface);}
-.stab{flex:1;padding:11px 0;background:none;border:none;border-bottom:2.5px solid transparent;color:var(--muted);font-family:'Black Han Sans',sans-serif;font-size:.78rem;cursor:pointer;transition:.2s;}
-.stab.active{color:var(--accent);border-bottom-color:var(--accent);}
-.stab:hover{color:var(--text);}
+    .icon{
+      font-size:72px;
+      margin-bottom:18px;
+      animation:float 2.5s ease-in-out infinite;
+    }
 
-/* COUNTER */
-.counter-block{text-align:center;}
-.count-num{font-family:'Black Han Sans',sans-serif;font-size:clamp(2.2rem,8vw,3.6rem);color:var(--accent);line-height:1;text-shadow:0 0 32px rgba(232,160,32,.35);}
-.count-label{font-size:.88rem;color:var(--muted);margin-top:4px;}
-.count-rps{font-size:.8rem;color:var(--orange);margin-top:2px;}
+    h1{
+      font-size:clamp(28px,6vw,42px);
+      color:var(--accent);
+      margin-bottom:14px;
+      font-weight:900;
+      letter-spacing:-1px;
+    }
 
-/* POT */
-.pot-wrap{position:relative;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;}
-.pot-wrap:active .pot-svg{transform:scale(.92);}
-.pot-svg{transition:transform .1s;}
-.steam-box{position:absolute;top:-52px;left:50%;transform:translateX(-50%);width:100px;height:52px;pointer-events:none;}
-.sp{position:absolute;bottom:0;width:14px;height:14px;border-radius:50%;background:rgba(220,215,200,.6);opacity:0;animation:sp 2s ease-out infinite;}
-.sp:nth-child(1){left:18%;}.sp:nth-child(2){left:46%;animation-delay:.65s;}.sp:nth-child(3){left:74%;animation-delay:1.3s;}
-@keyframes sp{0%{transform:translateY(0) scale(1);opacity:.7;}100%{transform:translateY(-44px) scale(2.4);opacity:0;}}
-.pot-info{text-align:center;}
-.pot-lv{font-family:'Black Han Sans',sans-serif;font-size:1.05rem;color:var(--orange);}
-.pot-sub{font-size:.8rem;color:var(--muted);margin-top:2px;}
+    .desc{
+      color:var(--muted);
+      font-size:15px;
+      line-height:1.7;
+      margin-bottom:30px;
+    }
 
-/* STATS GRID */
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:320px;}
-.stat-card{background:var(--surface2);border:1px solid rgba(232,160,32,.08);border-radius:10px;padding:10px 12px;text-align:center;}
-.stat-val{font-family:'Black Han Sans',sans-serif;font-size:.95rem;color:var(--accent);}
-.stat-lbl{font-size:.68rem;color:var(--muted);margin-top:3px;}
+    .time-box{
+      background:rgba(232,160,32,.08);
+      border:1px solid rgba(232,160,32,.18);
+      border-radius:16px;
+      padding:18px;
+      margin-bottom:26px;
+    }
 
-/* UPGRADE CARDS */
-.upg-card{background:var(--surface2);border:1.5px solid rgba(232,160,32,.08);border-radius:10px;padding:10px 12px;margin-bottom:7px;cursor:pointer;transition:all .18s;}
-.upg-card:hover{border-color:rgba(232,160,32,.25);transform:translateX(2px);}
-.upg-card.can{border-color:rgba(232,160,32,.38);}
-.upg-card.maxed{opacity:.38;cursor:default;}.upg-card.maxed:hover{transform:none;}
-.upg-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;}
-.upg-name{font-size:.84rem;font-weight:700;}
-.upg-lv{font-size:.7rem;color:var(--muted);}
-.upg-desc{font-size:.72rem;color:var(--muted);margin-bottom:5px;}
-.upg-cost{font-size:.78rem;font-weight:700;color:var(--accent);}
-.upg-cost.g{color:var(--muted);}
+    .time-title{
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:8px;
+    }
 
-/* MAXED COLLAPSIBLE */
-.maxed-toggle{display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:9px 12px;margin-bottom:6px;cursor:pointer;font-size:.79rem;color:var(--muted);transition:.18s;}
-.maxed-toggle:hover{border-color:rgba(232,160,32,.18);color:var(--text);}
+    .time{
+      font-size:22px;
+      font-weight:800;
+      color:var(--accent);
+    }
 
-/* PRODUCER CARDS */
-.prod-card{background:var(--surface2);border:1.5px solid rgba(232,160,32,.06);border-radius:10px;padding:10px 12px;margin-bottom:7px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .18s;}
-.prod-card:hover{border-color:rgba(232,160,32,.22);transform:translateX(2px);}
-.prod-card.can{border-color:rgba(232,160,32,.32);}
-.prod-icon{font-size:1.5rem;flex-shrink:0;}
-.prod-info{flex:1;min-width:0;}
-.prod-name{font-size:.83rem;font-weight:700;}
-.prod-desc{font-size:.7rem;color:var(--muted);}
-.prod-right{text-align:right;flex-shrink:0;}
-.prod-cnt{font-family:'Black Han Sans',sans-serif;font-size:1.1rem;color:var(--orange);}
-.prod-cost{font-size:.73rem;color:var(--accent);}
-.prod-cost.g{color:var(--muted);}
+    .footer{
+      font-size:13px;
+      color:var(--muted);
+      opacity:.8;
+    }
 
-/* RANKING PANEL */
-.lb-sec-title{font-family:'Black Han Sans',sans-serif;font-size:.78rem;color:var(--muted);letter-spacing:.04em;margin:12px 0 8px;}
-.lb-sec-title:first-child{margin-top:0;}
-.nick-panel{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;}
-.nick-panel label{font-size:.75rem;color:var(--muted);display:block;margin-bottom:8px;}
-.nick-row{display:flex;gap:8px;align-items:center;}
-.nick-row input{flex:1;min-width:0;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:.88rem;outline:none;width:100%;}
-.nick-row input:focus{border-color:var(--accent);}
-.nick-row button{background:var(--accent);color:#1a0f00;border:none;border-radius:8px;padding:10px 14px;font-family:'Black Han Sans',sans-serif;font-size:.85rem;cursor:pointer;white-space:nowrap;flex-shrink:0;}
-.nick-row button:active{opacity:.8;}
-.lb-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);}
-.lb-row:last-child{border-bottom:none;}
-.lb-rank{width:24px;font-family:'Black Han Sans',sans-serif;font-size:.88rem;color:var(--muted);text-align:center;flex-shrink:0;}
-.lb-rank.gd{color:#f0c030;}.lb-rank.sv{color:#b0b8c0;}.lb-rank.bz{color:#c08840;}
-.lb-name{flex:1;font-size:.82rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.lb-score{font-family:'Black Han Sans',sans-serif;font-size:.9rem;color:var(--accent);flex-shrink:0;}
-.lb-unit{font-size:.67rem;color:var(--muted);margin-left:2px;flex-shrink:0;}
-.my-badge{font-size:.64rem;background:rgba(232,160,32,.15);color:var(--accent);border-radius:3px;padding:1px 4px;margin-left:4px;}
-.lb-empty{font-size:.8rem;color:var(--muted);text-align:center;padding:12px 0;}
-
-/* ACHIEVEMENT MODAL */
-.ach-fab{position:fixed;right:16px;z-index:8800;background:var(--accent);color:#1a0f00;border:none;border-radius:50%;width:48px;height:48px;font-size:1.25rem;cursor:pointer;box-shadow:0 4px 18px rgba(232,160,32,.4);transition:.18s;display:flex;align-items:center;justify-content:center;}
-.ach-fab:active{transform:scale(.88);}
-.ach-fab-inner{position:relative;pointer-events:none;}
-.ach-dot{position:absolute;top:-6px;right:-8px;background:var(--danger);color:#fff;border-radius:50%;width:17px;height:17px;font-size:.58rem;font-family:'Black Han Sans',sans-serif;display:none;align-items:center;justify-content:center;}
-.ach-dot.show{display:flex;}
-
-.modal-overlay{position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;}
-.modal-overlay.hidden{display:none;}
-.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:420px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.5);}
-.modal-head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border);}
-.modal-title{font-family:'Black Han Sans',sans-serif;font-size:1rem;color:var(--accent);}
-.modal-close{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:2px 8px;border-radius:4px;line-height:1;}
-.modal-close:hover{color:var(--text);}
-.modal-body{overflow-y:auto;padding:14px 16px;}
-.modal-body::-webkit-scrollbar{width:3px;}
-.modal-body::-webkit-scrollbar-thumb{background:var(--border);}
-.ach-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.ach-card{background:var(--surface2);border:1.5px solid rgba(232,160,32,.06);border-radius:10px;padding:11px 12px;transition:.18s;}
-.ach-card.done{border-color:rgba(232,160,32,.3);background:rgba(232,160,32,.06);}
-.ach-card-icon{font-size:1.5rem;margin-bottom:5px;}
-.ach-card-name{font-size:.76rem;font-weight:700;color:var(--muted);}
-.ach-card-name.done{color:var(--accent);}
-
-/* BOTTOM TABS */
-.m-tabs{position:fixed;bottom:0;left:0;right:0;z-index:9000;height:var(--tab-h);background:rgba(15,14,12,.97);backdrop-filter:blur(14px);border-top:1px solid var(--border);}
-.mtab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;color:var(--muted);font-size:.62rem;font-weight:700;cursor:pointer;transition:.18s;padding:8px 4px;position:relative;}
-.mtab.active{color:var(--accent);}
-.mtab .ti{font-size:1.3rem;line-height:1;}
-.mtab-pip{position:absolute;top:8px;right:calc(50% - 20px);width:7px;height:7px;background:var(--danger);border-radius:50%;display:none;}
-.mtab-pip.show{display:block;}
-
-/* PARTICLE */
-.ptcl{position:fixed;pointer-events:none;font-family:'Black Han Sans',sans-serif;font-size:1.1rem;color:var(--accent);z-index:8888;animation:ptcl .85s ease-out forwards;}
-@keyframes ptcl{0%{transform:translateY(0) scale(1);opacity:1;}100%{transform:translateY(-72px) scale(.5);opacity:0;}}
-
-/* TOAST */
-.toast{position:fixed;left:50%;transform:translateX(-50%) translateY(70px);background:var(--accent);color:#1a0f00;padding:9px 20px;border-radius:24px;font-weight:700;font-size:.86rem;z-index:9999;white-space:nowrap;transition:transform .38s cubic-bezier(.175,.885,.32,1.275);pointer-events:none;}
-.toast.show{transform:translateX(-50%) translateY(0);}
-</style>
+    @keyframes float{
+      0%,100%{ transform:translateY(0px);}
+      50%{ transform:translateY(-8px);}
+    }
+  </style>
 </head>
 <body>
 
-<nav class="site-nav">
-  <a class="nav-brand" href="index.html">🍚 밥솥 온라인</a>
-  <div class="nav-tabs">
-    <a class="nav-tab off" href="index.html">시뮬레이터</a>
-    <a class="nav-tab on" href="clicker.html">밥솥 키우기</a>
-  </div>
-</nav>
+  <div class="panel">
+    <div class="icon">🍚</div>
 
-<div class="game-wrap" id="gameWrap">
+    <h1>서버 점검중</h1>
 
-  <!-- ══ MAIN PANEL ══ -->
-  <div class="p-main m-active" id="panelMain">
-    <div class="counter-block">
-      <div class="count-num" id="countNum">0</div>
-      <div class="count-label">🍚 밥알</div>
-      <div class="count-rps" id="countRps">초당 +0 밥알</div>
+    <p class="desc">
+      현재 서버 점검 및 데이터베이스 이전 작업이 진행중입니다.<br>
+      일시적으로 접속이 제한되며, 서비스는 목요일에 다시 오픈될 예정입니다.
+    </p>
+
+    <div class="time-box">
+      <div class="time-title">예상 점검 종료</div>
+      <div class="time">목요일 예정</div>
     </div>
 
-    <div class="pot-wrap" id="potBtn">
-      <div class="steam-box"><div class="sp"></div><div class="sp"></div><div class="sp"></div></div>
-      <svg class="pot-svg" width="200" height="200" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <radialGradient id="bG" cx="38%" cy="35%" r="65%"><stop offset="0%" stop-color="#7a4d1a"/><stop offset="100%" stop-color="#3d2200"/></radialGradient>
-          <radialGradient id="lG" cx="40%" cy="30%" r="70%"><stop offset="0%" stop-color="#6b3c00"/><stop offset="100%" stop-color="#3a1e00"/></radialGradient>
-          <filter id="glow"><feGaussianBlur stdDeviation="3.5" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>
-        </defs>
-        <ellipse cx="110" cy="202" rx="68" ry="9" fill="#000" opacity=".45"/>
-        <path d="M42 108 Q42 178 110 178 Q178 178 178 108 L178 98 Q178 70 110 70 Q42 70 42 98 Z" fill="url(#bG)"/>
-        <ellipse cx="110" cy="98" rx="68" ry="14" fill="#5c3500"/>
-        <ellipse cx="110" cy="96" rx="65" ry="12" fill="#6b3c00"/>
-        <path d="M44 90 Q44 73 110 73 Q176 73 176 90" fill="#5a3200"/>
-        <ellipse cx="110" cy="90" rx="66" ry="13" fill="url(#lG)"/>
-        <ellipse cx="110" cy="90" rx="66" ry="13" fill="none" stroke="#7a4800" stroke-width="1.2"/>
-        <ellipse cx="110" cy="77" rx="18" ry="6" fill="#7a4800"/>
-        <ellipse cx="110" cy="75" rx="12" ry="4.5" fill="#b07020"/>
-        <ellipse cx="110" cy="74" rx="7" ry="3" fill="#d09030"/>
-        <ellipse cx="76" cy="96" rx="15" ry="6" fill="rgba(255,210,100,.1)" transform="rotate(-18,76,96)"/>
-        <path d="M40 118 Q26 118 24 132 Q22 144 36 144 L42 141" stroke="#4a2800" stroke-width="7" fill="none" stroke-linecap="round"/>
-        <path d="M180 118 Q194 118 196 132 Q198 144 184 144 L178 141" stroke="#4a2800" stroke-width="7" fill="none" stroke-linecap="round"/>
-        <path d="M40 118 Q26 118 24 132 Q22 144 36 144 L42 141" stroke="#6b3c00" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <path d="M180 118 Q194 118 196 132 Q198 144 184 144 L178 141" stroke="#6b3c00" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <rect x="76" y="138" width="68" height="30" rx="7" fill="#1e1000"/>
-        <rect x="78" y="140" width="64" height="26" rx="6" fill="#2a1500"/>
-        <circle id="led" cx="91" cy="153" r="5.5" fill="#333"/>
-        <rect x="101" y="146" width="34" height="4" rx="2" fill="#1a0a00"/>
-        <rect x="101" y="153" width="26" height="4" rx="2" fill="#1a0a00"/>
-        <rect x="101" y="160" width="30" height="4" rx="2" fill="#1a0a00"/>
-        <g id="dSilver" style="display:none">
-          <ellipse cx="110" cy="90" rx="66" ry="13" fill="none" stroke="rgba(180,190,210,.28)" stroke-width="1.5"/>
-          <circle cx="155" cy="90" r="3" fill="rgba(180,190,210,.35)"/>
-          <circle cx="65" cy="90" r="3" fill="rgba(180,190,210,.35)"/>
-        </g>
-        <g id="dGold" style="display:none">
-          <ellipse cx="110" cy="90" rx="66" ry="13" fill="none" stroke="rgba(255,209,50,.4)" stroke-width="2"/>
-          <circle cx="155" cy="90" r="4" fill="rgba(255,209,50,.5)"/>
-          <circle cx="65" cy="90" r="4" fill="rgba(255,209,50,.5)"/>
-          <circle cx="110" cy="75" r="3.5" fill="rgba(255,209,50,.55)"/>
-        </g>
-        <g id="dLegend" style="display:none">
-          <ellipse cx="110" cy="90" rx="66" ry="13" fill="none" stroke="rgba(255,120,0,.55)" stroke-width="2.5" filter="url(#glow)"/>
-          <circle cx="155" cy="90" r="5" fill="rgba(255,140,0,.65)" filter="url(#glow)"/>
-          <circle cx="65" cy="90" r="5" fill="rgba(255,140,0,.65)" filter="url(#glow)"/>
-          <circle cx="110" cy="75" r="4.5" fill="rgba(255,160,0,.7)" filter="url(#glow)"/>
-          <ellipse cx="110" cy="90" rx="66" ry="13" fill="rgba(255,100,0,.04)"/>
-        </g>
-      </svg>
-    </div>
-
-    <div class="pot-info">
-      <div class="pot-lv" id="potLv">Lv.1 — 일반 밥솥</div>
-      <div class="pot-sub" id="potSub">클릭당 +1 밥알</div>
-    </div>
-
-    <!-- 통계 그리드 -->
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-val" id="stTotal">0</div><div class="stat-lbl">총 획득 밥알</div></div>
-      <div class="stat-card"><div class="stat-val" id="stClicks">0</div><div class="stat-lbl">총 클릭 수</div></div>
-      <div class="stat-card"><div class="stat-val" id="stProds">0</div><div class="stat-lbl">총 생산자</div></div>
-      <div class="stat-card"><div class="stat-val" id="stAchs">0/12</div><div class="stat-lbl">업적 달성</div></div>
+    <div class="footer">
+      이용에 불편을 드려 죄송합니다.
     </div>
   </div>
 
-  <!-- ══ SIDEBAR AREA ══ -->
-  <div class="sidebar-area" id="sidebarArea">
-
-    <!-- 데스크탑 사이드바 탭 -->
-    <div class="stabs" id="stabs">
-      <button class="stab active" onclick="showSidePanel('panelUpg',this)">⚡ 업그레이드</button>
-      <button class="stab" onclick="showSidePanel('panelProd',this)">🏭 생산</button>
-      <button class="stab" onclick="showSidePanel('panelRank',this)">🏆 랭킹</button>
-    </div>
-
-    <!-- ── 업그레이드 패널 ── -->
-    <div class="p-side s-active" id="panelUpg">
-      <div id="upgList"></div>
-    </div>
-
-    <!-- ── 생산 패널 ── -->
-    <div class="p-side" id="panelProd">
-      <div id="prodList"></div>
-    </div>
-
-    <!-- ── 랭킹 패널 ── -->
-    <div class="p-side" id="panelRank">
-      <div class="lb-sec-title">📋 내 기록 등록</div>
-      <div class="nick-panel">
-        <label>닉네임을 입력하면 밥알 기록이 저장됩니다.</label>
-        <div class="nick-row">
-          <input id="nickInput" type="text" placeholder="닉네임 (최대 12자)" maxlength="12" autocomplete="off"/>
-          <button onclick="submitClicker()">등록</button>
-        </div>
-      </div>
-      <div class="lb-sec-title">🏆 밥솥 키우기 랭킹</div>
-      <div id="clickerLb"><div class="lb-empty">불러오는 중…</div></div>
-      <div class="lb-sec-title">🍚 취사 랭킹 <span style="font-size:.7rem;font-weight:400;color:var(--muted)">(시뮬레이터)</span></div>
-      <div id="simLb"><div class="lb-empty">불러오는 중…</div></div>
-    </div>
-
-  </div><!-- /sidebar-area -->
-
-</div><!-- /game-wrap -->
-
-<!-- ══ MOBILE BOTTOM TABS ══ -->
-<div class="m-tabs" id="mTabs">
-  <button class="mtab active" data-panel="panelMain" onclick="switchMobileTab(this)">
-    <span class="ti">🍚</span>메인
-  </button>
-  <button class="mtab" data-panel="panelUpg" onclick="switchMobileTab(this)">
-    <span class="ti">⚡</span>업글
-    <span class="mtab-pip" id="upgPip"></span>
-  </button>
-  <button class="mtab" data-panel="panelProd" onclick="switchMobileTab(this)">
-    <span class="ti">🏭</span>생산
-  </button>
-  <button class="mtab" data-panel="panelRank" onclick="switchMobileTab(this)">
-    <span class="ti">🏆</span>랭킹
-  </button>
-</div>
-
-<!-- ══ 업적 플로팅 버튼 ══ -->
-<button class="ach-fab" onclick="toggleAchModal()">
-  <div class="ach-fab-inner">🎖<span class="ach-dot" id="achDot">0</span></div>
-</button>
-
-<!-- ══ 업적 모달 ══ -->
-<div class="modal-overlay hidden" id="achModal" onclick="onOverlayClick(event)">
-  <div class="modal-box">
-    <div class="modal-head">
-      <span class="modal-title">🎖 업적</span>
-      <button class="modal-close" onclick="document.getElementById('achModal').classList.add('hidden')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="ach-grid" id="achList"></div>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-localStorage.clear();
-// ── Firebase ──────────────────────────────────────────────────────────────
-const FB = 'https://rice-online-23d6f-default-rtdb.asia-southeast1.firebasedatabase.app';
-const fbGet = async p => { try { return await (await fetch(`${FB}/${p}.json`)).json(); } catch { return null; } };
-const fbSet = async (p, d) => { try { await fetch(`${FB}/${p}.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) }); } catch {} };
-function getUUID() { let u = localStorage.getItem('rice_user_uuid'); if (!u) { u = 'u-' + Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 9); localStorage.setItem('rice_user_uuid', u); } return u; }
-const MY_UUID = getUUID();
-
-// ── 상태 ─────────────────────────────────────────────────────────────────
-const G = { rice: 0, total: 0, clickPow: 1, rps: 0, prodMulBonus: 0, clicks: 0, autoClick: false, autoClickAccum: 0, autoClickRate: 1 };
-// prodMul 계산: 1 + 보너스 합산 (곱연산 누적 방지)
-const getPM = () => 1 + G.prodMulBonus;
-
-// ── 업그레이드 ─────────────────────────────────────────────────────────────
-// [생산 업글] mP(x) = prodMulBonus += x  →  최종 배율 = 1 + 합산값 (곱연산 폭발 방지)
-// [클릭 배율] 과거 ×1.5/×2/×3/×5/×10 → ×1.3/×1.8/×2.5/×4/×8 로 감쇠
-const UPGRADES = [
-  // ── 초반 ──
-  { id:'u1',  name:'좋은 쌀',       desc:'클릭당 +2',              tag:'클릭', cost:30,            max:5, lv:0, fn:()=>{ G.clickPow+=2; }},
-  { id:'u2',  name:'화력 강화',     desc:'클릭당 +5',              tag:'클릭', cost:150,           max:5, lv:0, fn:()=>{ G.clickPow+=5; }},
-  { id:'u3',  name:'증기 조절',     desc:'생산 보너스 +60%',       tag:'생산', cost:500,           max:3, lv:0, fn:()=>mP(0.6)},
-  { id:'u4',  name:'터보 화력',     desc:'클릭당 +20',             tag:'클릭', cost:2000,          max:3, lv:0, fn:()=>{ G.clickPow+=20; }},
-  { id:'u5',  name:'스마트 밥솥',   desc:'생산 보너스 +100%',      tag:'생산', cost:5000,          max:2, lv:0, fn:()=>mP(1.0)},
-  { id:'u6',  name:'황금 쌀',       desc:'클릭당 +100',            tag:'클릭', cost:18000,         max:3, lv:0, fn:()=>{ G.clickPow+=100; }},
-  { id:'u7',  name:'손목 단련',     desc:'클릭당 +300',            tag:'클릭', cost:55000,         max:3, lv:0, fn:()=>{ G.clickPow+=300; }},
-  { id:'u8',  name:'자동 클릭',     desc:'초당 자동 1클릭',        tag:'특수', cost:25000,         max:1, lv:0, fn:()=>{ G.autoClick=true; }},
-  // ── 중반 ──
-  { id:'u9',  name:'황금 손',       desc:'클릭 파워 ×1.3',        tag:'클릭', cost:100000,        max:3, lv:0, fn:()=>{ G.clickPow=Math.floor(G.clickPow*1.3); }},
-  { id:'u10', name:'초밥 기술',     desc:'클릭당 +1,000',          tag:'클릭', cost:300000,        max:3, lv:0, fn:()=>{ G.clickPow+=1000; }},
-  { id:'u11', name:'생산 가속',     desc:'생산 보너스 +250%',      tag:'생산', cost:500000,        max:1, lv:0, fn:()=>mP(2.5)},
-  { id:'u12', name:'장인의 손길',   desc:'클릭당 +5,000',          tag:'클릭', cost:1500000,       max:2, lv:0, fn:()=>{ G.clickPow+=5000; }},
-  { id:'u13', name:'신의 레시피',   desc:'클릭 파워 ×1.8',        tag:'클릭', cost:3000000,       max:1, lv:0, fn:()=>{ G.clickPow=Math.floor(G.clickPow*1.8); }},
-  { id:'u14', name:'극한 자동화',   desc:'생산 보너스 +500%',      tag:'생산', cost:5000000,       max:1, lv:0, fn:()=>mP(5.0)},
-  { id:'u15', name:'전설의 손',     desc:'클릭당 +50,000',         tag:'클릭', cost:10000000,      max:2, lv:0, fn:()=>{ G.clickPow+=50000; }},
-  { id:'ux1', name:'쌀 최적화',     desc:'생산 보너스 +800%',      tag:'생산', cost:15000000,      max:1, lv:0, fn:()=>mP(8.0)},
-  { id:'ux2', name:'마스터 손목',   desc:'클릭당 +80,000',         tag:'클릭', cost:20000000,      max:2, lv:0, fn:()=>{ G.clickPow+=80000; }},
-  // ── 후반 ──
-  { id:'u17', name:'밥알 폭풍',     desc:'클릭당 +300,000',        tag:'클릭', cost:40000000,      max:2, lv:0, fn:()=>{ G.clickPow+=300000; }},
-  { id:'u18', name:'생산 혁명',     desc:'생산 보너스 +1,500%',    tag:'생산', cost:80000000,      max:1, lv:0, fn:()=>mP(15.0)},
-  { id:'u19', name:'신의 손목',     desc:'클릭 파워 ×2.5',        tag:'클릭', cost:150000000,     max:1, lv:0, fn:()=>{ G.clickPow=Math.floor(G.clickPow*2.5); }},
-  { id:'u16', name:'터보 자동클릭', desc:'자동클릭 5회/초로 강화', tag:'특수', cost:200000000,     max:1, lv:0, fn:()=>{ G.autoClickRate=5; }},
-  { id:'u20', name:'은하 자동화',   desc:'생산 보너스 +3,000%',    tag:'생산', cost:600000000,     max:1, lv:0, fn:()=>mP(30.0)},
-  { id:'u21', name:'빅뱅 클릭',     desc:'클릭당 +5,000,000',      tag:'클릭', cost:1200000000,    max:2, lv:0, fn:()=>{ G.clickPow+=5000000; }},
-  { id:'u22', name:'클릭 신',       desc:'클릭 파워 ×4',          tag:'클릭', cost:6000000000,    max:1, lv:0, fn:()=>{ G.clickPow=Math.floor(G.clickPow*4); }},
-  { id:'u23', name:'우주 자동화',   desc:'생산 보너스 +8,000%',    tag:'생산', cost:25000000000,   max:1, lv:0, fn:()=>mP(80.0)},
-  { id:'u24', name:'전설의 레시피', desc:'클릭당 +50,000,000',     tag:'클릭', cost:60000000000,   max:2, lv:0, fn:()=>{ G.clickPow+=50000000; }},
-  { id:'u25', name:'밥의 창조주',   desc:'클릭 파워 ×8',          tag:'클릭', cost:300000000000,  max:1, lv:0, fn:()=>{ G.clickPow=Math.floor(G.clickPow*8); }},
-  { id:'u26', name:'무한 생산로',   desc:'생산 보너스 +20,000%',   tag:'생산', cost:1500000000000, max:1, lv:0, fn:()=>mP(200.0)},
-];
-// ── 생산자 (bRps 재조정 + 구매 스케일 1.15→1.10) ─────────────────────────
-// 비용 단계비 ~5x / RPS 단계비 ~3.5-4.5x  →  후반 갈수록 cost-eff 소폭 감소 (의도적)
-const PRODUCERS = [
-  { id:'p1',  name:'쌀숭이',            icon:'🐒', desc:'쌀을 캐는 원숭이 우우우',                         base:15,          cnt:0, bRps:0.2    },
-  { id:'p2',  name:'증기 기관',         icon:'💨', desc:'증기 배출이 시작됩니다.',                base:80,          cnt:0, bRps:0.8    },
-  { id:'p3',  name:'가마솥',            icon:'🍲', desc:'시골의 그맛',                            base:400,         cnt:0, bRps:3.5    },
-  { id:'p4',  name:'논밭',              icon:'🌾', desc:'논두렁입니다.',                          base:1800,        cnt:0, bRps:13     },
-  { id:'p5',  name:'밥솥 공장',         icon:'🏭', desc:'쿠쿠 본사입니다.',                       base:7000,        cnt:0, bRps:45     },
-  { id:'p6',  name:'백미 제국',         icon:'⚪', desc:'오직 만을 위한 지배령입니다.',         base:30000,       cnt:0, bRps:160    },
-  { id:'p7',  name:'쌀융합',            icon:'☢️', desc:'핵 에너지로 쌀을 제조합니다.',           base:150000,      cnt:0, bRps:600    },
-  { id:'p8',  name:'쌀리 커크',         icon:'🧑🏻', desc:'We are salie kirk',                   base:700000,      cnt:0, bRps:2200   },
-  { id:'p9',  name:'다이슨 밥솥-스피어', icon:'☀️', desc:'달과 지구사이의 초거대 밥솥입니다.',       base:5000000,     cnt:0, bRps:9000   },
-  { id:'p10', name:'제프리 쌀스타인',           icon:'👨🏻‍🦳', desc:'비밀 섬에서 만들어지는 쌀',         base:35000000,    cnt:0, bRps:38000  },
-  { id:'p11', name:'쌀틀러와 쌀탈린',      icon:'🙋🏻‍♂️', desc:'특이한 콧수염을 가진 사람 둘이 만드는 쌀입니다.',       base:250000000,   cnt:0, bRps:150000 },
-  { id:'p12', name:'쌀타 할아버지',              icon:'🎅', desc:'누군가 배달해준 쌀입니다.',       base:2000000000,  cnt:0, bRps:600000 },
-  { id:'p13', name:'쌀툴루',         icon:'👁️', desc:'쌀툴루 신화의 주신입니다.', base:18000000000, cnt:0, bRps:2500000},
-  { id:'p14', name:'입떡',         icon:'🎺', desc:'쌀을 소비하는 곳입니다.', base:100000000000000, cnt:0, bRps:0},
-];
-
-// prodMulBonus 덧셈 누적 (곱연산 아님 — 최종배율 = 1 + 합산값)
-const mP = b => { G.prodMulBonus = (G.prodMulBonus||0) + b; rRps(); };
-const rRps = () => { G.rps = PRODUCERS.reduce((s, p) => s + p.cnt * p.bRps * getPM(), 0); };
-// 생산자 구매 스케일: 1.10^n  (50개 사면 117배, 이전엔 1083배)
-const pC = p => Math.floor(p.base * Math.pow(1.10, p.cnt));
-// 업글 레벨 비용 스케일: 1.6^lv (멀티레벨 부담 완화)
-const uC = u => Math.floor(u.cost * Math.pow(1.6, u.lv));
-
-// ── 밥솥 레벨 ─────────────────────────────────────────────────────────────
-const POT_LVS = [
-  { min:0,            name:'일반 밥솥',     deco:null      },
-  { min:500,          name:'압력 밥솥',     deco:null      },
-  { min:3000,         name:'초고압 밥솥',   deco:'dSilver' },
-  { min:20000,        name:'스마트 밥솥',   deco:'dSilver' },
-  { min:100000,       name:'황금 밥솥',     deco:'dGold'   },
-  { min:500000,       name:'레전더리 밥솥', deco:'dLegend' },
-  { min:5000000,      name:'우주 밥솥',     deco:'dLegend' },
-  { min:100000000,    name:'신화 밥솥',     deco:'dLegend' },
-  { min:5000000000,   name:'창조주의 밥솥', deco:'dLegend' },
-  { min:1000000000000,name:'태초의 밥솥',     deco:'dLegend' },
-];
-function getPotLv() { let l = 0; POT_LVS.forEach((p, i) => { if (G.total >= p.min) l = i; }); return { lv: l + 1, ...POT_LVS[l] }; }
-
-// ── 업적 ─────────────────────────────────────────────────────────────────
-const ACHS = [
-  { id:'a1',  name:'첫 밥알',        icon:'🌱', chk:()=>G.total>=1,                                                    done:false },
-  { id:'a2',  name:'100개의 밥알',   icon:'🍚', chk:()=>G.total>=100,                                                   done:false },
-  { id:'a3',  name:'한 공기',        icon:'🏃', chk:()=>G.total>=4000,                                                  done:false },
-  { id:'a4',  name:'만알의 꿈',      icon:'✨', chk:()=>G.total>=10000,                                                 done:false },
-  { id:'a5',  name:'십만알 황금',    icon:'🌟', chk:()=>G.total>=100000,                                                done:false },
-  { id:'a6',  name:'백만 밥알',      icon:'💫', chk:()=>G.total>=1000000,                                               done:false },
-  { id:'a7',  name:'억만장자',       icon:'💎', chk:()=>G.total>=100000000,                                             done:false },
-  { id:'a8',  name:'첫 고용',        icon:'👨‍🍳', chk:()=>PRODUCERS.some(p=>p.cnt>=1),                                  done:false },
-  { id:'a9',  name:'소규모 공장',    icon:'🏭', chk:()=>PRODUCERS.reduce((s,p)=>s+p.cnt,0)>=10,                        done:false },
-  { id:'a10', name:'대형 공장',      icon:'🏗',  chk:()=>PRODUCERS.reduce((s,p)=>s+p.cnt,0)>=50,                       done:false },
-  { id:'a11', name:'클릭왕',         icon:'👆', chk:()=>G.clicks>=1000,                                                 done:false },
-  { id:'a12', name:'손가락 부자',    icon:'💪', chk:()=>G.clicks>=10000,                                                done:false },
-  // ── 신규 업적 ──
-  { id:'a13', name:'천만알 돌파',    icon:'🔥', chk:()=>G.total>=10000000,                                              done:false },
-  { id:'a14', name:'10억 밥알',      icon:'🚀', chk:()=>G.total>=1000000000,                                            done:false },
-  { id:'a15', name:'조 단위 농부',   icon:'🌌', chk:()=>G.total>=1000000000000,                                         done:false },
-  { id:'a16', name:'자본가', icon:'🎪', chk:()=>PRODUCERS.every(p=>p.cnt>=1),                                 done:false },
-  { id:'a17', name:'100인 군단',     icon:'⚔️', chk:()=>PRODUCERS.reduce((s,p)=>s+p.cnt,0)>=100,                       done:false },
-  { id:'a18', name:'클릭 마스터',    icon:'🖱️', chk:()=>G.clicks>=100000,                                              done:false },
-  { id:'a19', name:'자동화의 왕',    icon:'🤖', chk:()=>G.autoClick&&(G.autoClickRate||1)>=5,                           done:false },
-  { id:'a20', name:'백미상제',        icon:'⛩️', chk:()=>G.total>=1e15,                                                  done:false },
-];
-
-const fmt = n => {
-  if (n >= 1e15) return (n/1e15).toFixed(2)+'Q';
-  if (n >= 1e12) return (n/1e12).toFixed(2)+'T';
-  if (n >= 1e9)  return (n/1e9).toFixed(2)+'B';
-  if (n >= 1e6)  return (n/1e6).toFixed(2)+'M';
-  if (n >= 1e3)  return (n/1e3).toFixed(1)+'K';
-  return Math.floor(n).toLocaleString();
-};
-
-// ── 렌더 ─────────────────────────────────────────────────────────────────
-function renderHUD() {
-  document.getElementById('countNum').textContent = fmt(G.rice);
-  document.getElementById('countRps').textContent = `초당 +${fmt(G.rps)} 밥알`;
-  const p = getPotLv();
-  document.getElementById('potLv').textContent = `Lv.${p.lv} — ${p.name}`;
-  document.getElementById('potSub').textContent = `클릭당 +${fmt(G.clickPow)} 밥알`;
-  ['dSilver','dGold','dLegend'].forEach(id => document.getElementById(id).style.display = 'none');
-  if (p.deco) document.getElementById(p.deco).style.display = '';
-  // 통계
-  document.getElementById('stTotal').textContent  = fmt(G.total);
-  document.getElementById('stClicks').textContent = fmt(G.clicks || 0);
-  document.getElementById('stProds').textContent  = PRODUCERS.reduce((s, p) => s + p.cnt, 0);
-  const doneN = ACHS.filter(a => a.done).length;
-  document.getElementById('stAchs').textContent = `${doneN}/${ACHS.length}`;
-}
-
-let _maxedOpen = false;
-function toggleMaxed() {
-  _maxedOpen = !_maxedOpen;
-  const el = document.getElementById('maxedList');
-  const ar = document.getElementById('maxedArrow');
-  if (el) el.style.display = _maxedOpen ? 'block' : 'none';
-  if (ar) ar.textContent = _maxedOpen ? '▲' : '▼';
-}
-
-function renderUpg() {
-  const available = UPGRADES.filter(u => u.lv < u.max);
-  const maxed     = UPGRADES.filter(u => u.lv >= u.max);
-
-  const tagColor = t => t==='클릭'?'#e8a020':t==='생산'?'#4a9940':'#c0392b';
-  const tagBg    = t => t==='클릭'?'rgba(232,160,32,.12)':t==='생산'?'rgba(74,153,64,.12)':'rgba(192,57,43,.12)';
-
-  const cardHtml = u => {
-    const c = uC(u), can = G.rice >= c;
-    const tagStyle = `font-size:.6rem;padding:1px 5px;border-radius:3px;color:${tagColor(u.tag)};background:${tagBg(u.tag)};margin-left:4px;vertical-align:middle;`;
-    return `<div class="upg-card ${can?'can':''}" onclick="buyUpg('${u.id}')">
-      <div class="upg-head">
-        <span class="upg-name">${u.name}<span style="${tagStyle}">${u.tag}</span></span>
-        <span class="upg-lv">Lv.${u.lv}/${u.max}</span>
-      </div>
-      <div class="upg-desc">${u.desc}</div>
-      <div class="upg-cost ${can?'':'g'}">🍚 ${fmt(c)}</div>
-    </div>`;
-  };
-
-  let html = available.map(cardHtml).join('');
-
-  if (maxed.length > 0) {
-    html += `<div class="maxed-toggle" onclick="toggleMaxed()">
-      <span>✅ 완료된 업그레이드 (${maxed.length})</span>
-      <span id="maxedArrow">${_maxedOpen?'▲':'▼'}</span>
-    </div>
-    <div id="maxedList" style="display:${_maxedOpen?'block':'none'}">
-      ${maxed.map(u => `<div class="upg-card maxed">
-        <div class="upg-head"><span class="upg-name">${u.name}</span><span class="upg-lv">MAX</span></div>
-        <div class="upg-desc">${u.desc}</div>
-      </div>`).join('')}
-    </div>`;
-  }
-
-  document.getElementById('upgList').innerHTML = html;
-
-  // 살 수 있는 업글 있으면 탭 점등
-  const canBuy = available.some(u => G.rice >= uC(u));
-  const pip = document.getElementById('upgPip');
-  if (pip) pip.classList.toggle('show', canBuy);
-}
-
-function renderProd() {
-  document.getElementById('prodList').innerHTML = PRODUCERS.map(p => {
-    const c = pC(p), can = G.rice >= c;
-    return `<div class="prod-card ${can?'can':''}" onclick="buyProd('${p.id}')">
-      <div class="prod-icon">${p.icon}</div>
-      <div class="prod-info">
-        <div class="prod-name">${p.name}</div>
-        <div class="prod-desc">${p.desc} · 초당 ${(p.bRps*getPM()).toFixed(2)}</div>
-      </div>
-      <div class="prod-right">
-        <div class="prod-cnt">${p.cnt}</div>
-        <div class="prod-cost ${can?'':'g'}">🍚 ${fmt(c)}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function renderAch() {
-  const doneN = ACHS.filter(a => a.done).length;
-  document.getElementById('achList').innerHTML = ACHS.map(a => `
-    <div class="ach-card ${a.done?'done':''}">
-      <div class="ach-card-icon">${a.icon}</div>
-      <div class="ach-card-name ${a.done?'done':''}">${a.name}</div>
-    </div>`).join('');
-  // 업적 FAB 배지
-  const dot = document.getElementById('achDot');
-  if (doneN > 0) { dot.textContent = doneN; dot.classList.add('show'); }
-  else dot.classList.remove('show');
-}
-
-function render() { renderHUD(); renderUpg(); renderProd(); }
-
-// ── 업적 체크 ─────────────────────────────────────────────────────────────
-const chkAch = () => {
-  ACHS.forEach(a => { if (!a.done && a.chk()) { a.done = true; showToast('🎖 업적: ' + a.name); renderAch(); } });
-};
-
-// ── 구매 ─────────────────────────────────────────────────────────────────
-function buyUpg(id) {
-  const u = UPGRADES.find(x => x.id === id);
-  if (!u || u.lv >= u.max) return;
-  const c = uC(u);
-  if (G.rice < c) return;
-  G.rice -= c; u.lv++; u.fn(); render();
-}
-function buyProd(id) {
-  const p = PRODUCERS.find(x => x.id === id);
-  if (!p) return;
-  const c = pC(p);
-  if (G.rice < c) return;
-  G.rice -= c; p.cnt++; rRps(); render(); chkAch();
-}
-
-// ── 클릭 ─────────────────────────────────────────────────────────────────
-document.getElementById('potBtn').addEventListener('click', e => {
-  G.rice += G.clickPow; G.total += G.clickPow;
-  G.clicks = (G.clicks || 0) + 1;
-  spawnPtcl(e.clientX, e.clientY, '+' + fmt(G.clickPow));
-  chkAch(); render();
-});
-function spawnPtcl(x, y, t) {
-  const d = document.createElement('div');
-  d.className = 'ptcl'; d.textContent = t;
-  d.style.left = (x - 18 + Math.random() * 36) + 'px';
-  d.style.top  = (y - 10) + 'px';
-  document.body.appendChild(d);
-  setTimeout(() => d.remove(), 850);
-}
-
-// ── LED ───────────────────────────────────────────────────────────────────
-setInterval(() => {
-  const l = document.getElementById('led');
-  if (G.rps > 0) l.setAttribute('fill', l.getAttribute('fill') === '#c0392b' ? '#ff5a47' : '#c0392b');
-  else l.setAttribute('fill', '#333');
-}, 700);
-
-// ── 토스트 ────────────────────────────────────────────────────────────────
-let _tt;
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
-  clearTimeout(_tt); _tt = setTimeout(() => el.classList.remove('show'), 2800);
-}
-
-// ── 업적 모달 ─────────────────────────────────────────────────────────────
-function toggleAchModal() { document.getElementById('achModal').classList.toggle('hidden'); }
-function onOverlayClick(e) { if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden'); }
-
-// ── 패널 전환 (데스크탑 사이드바) ─────────────────────────────────────────
-function showSidePanel(id, btn) {
-  document.querySelectorAll('.p-side').forEach(el => el.classList.remove('s-active'));
-  document.getElementById(id).classList.add('s-active');
-  document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-// ── 패널 전환 (모바일 탭) ─────────────────────────────────────────────────
-function switchMobileTab(btn) {
-  const id = btn.dataset.panel;
-  document.getElementById('panelMain').classList.remove('m-active');
-  document.querySelectorAll('.p-side').forEach(el => el.classList.remove('m-active'));
-  if (id === 'panelMain') {
-    document.getElementById('panelMain').classList.add('m-active');
-  } else {
-    document.getElementById(id).classList.add('m-active');
-  }
-  document.querySelectorAll('.mtab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  // 업글 탭 누르면 pip 끄기
-  if (id === 'panelUpg') {
-    const pip = document.getElementById('upgPip');
-    if (pip) pip.classList.remove('show');
-  }
-}
-
-// ── Firebase 랭킹 ─────────────────────────────────────────────────────────
-const medals = ['🥇','🥈','🥉'];
-function lbRow(i, uuid, name, score, unit) {
-  const cls  = i < 3 ? ['gd','sv','bz'][i] : '';
-  const rank = i < 3 ? medals[i] : `${i+1}`;
-  const isMe = uuid === MY_UUID ? '<span class="my-badge">나</span>' : '';
-  return `<div class="lb-row"><span class="lb-rank ${cls}">${rank}</span><span class="lb-name">${name}${isMe}</span><span class="lb-score">${score}</span><span class="lb-unit">${unit}</span></div>`;
-}
-
-async function renderSimLb() {
-  const data = await fbGet('ranking');
-  const el = document.getElementById('simLb');
-  if (!data) { el.innerHTML = '<div class="lb-empty">기록 없음</div>'; return; }
-  const entries = Object.entries(data).map(([uuid, v]) => ({ uuid, name:v.name||'?', count:v.count||0 })).sort((a,b)=>b.count-a.count).slice(0,5);
-  el.innerHTML = entries.length ? entries.map(({uuid,name,count},i)=>lbRow(i,uuid,name,count,'회')).join('') : '<div class="lb-empty">기록 없음</div>';
-}
-
-async function renderClickerLb() {
-  const data = await fbGet('clicker_ranking');
-  const el = document.getElementById('clickerLb');
-  if (!data) { el.innerHTML = '<div class="lb-empty">아직 기록 없음</div>'; return; }
-  const entries = Object.entries(data).map(([uuid,v])=>({uuid,name:v.name||'?',score:v.score||0})).sort((a,b)=>b.score-a.score).slice(0,10);
-  el.innerHTML = entries.length ? entries.map(({uuid,name,score},i)=>lbRow(i,uuid,name,fmt(score),'알')).join('') : '<div class="lb-empty">아직 기록 없음</div>';
-}
-
-async function submitClicker() {
-  const name = document.getElementById('nickInput').value.trim();
-  if (!name) { showToast('❌ 닉네임을 입력해주세요!'); return; }
-  localStorage.setItem('rice_my_name', name);
-  await fbSet(`clicker_ranking/${MY_UUID}`, { name, score:Math.floor(G.total), updatedAt:Date.now() });
-  showToast('✅ 기록 등록: ' + fmt(G.total) + ' 밥알');
-  renderClickerLb();
-}
-
-// ── 저장 / 불러오기 ───────────────────────────────────────────────────────
-function save() {
-  localStorage.setItem('riceClicker', JSON.stringify({
-    rice: G.rice, total: G.total, clickPow: G.clickPow, prodMulBonus: G.prodMulBonus||0,
-    autoClick: G.autoClick, clicks: G.clicks || 0, autoClickRate: G.autoClickRate || 1,
-    upgs: UPGRADES.map(u => u.lv),
-    prods: PRODUCERS.map(p => p.cnt)
-  }));
-}
-function load() {
-  try {
-    const s = JSON.parse(localStorage.getItem('riceClicker') || 'null');
-    if (!s) return;
-    G.rice = s.rice || 0; G.total = s.total || 0;
-    G.clickPow = s.clickPow || 1; G.prodMulBonus = s.prodMulBonus || 0;
-    G.autoClick = s.autoClick || false; G.clicks = s.clicks || 0;
-    G.autoClickRate = s.autoClickRate || 1;
-    s.upgs?.forEach((lv, i) => { if (UPGRADES[i]) UPGRADES[i].lv = lv; });
-    s.prods?.forEach((cnt, i) => { if (PRODUCERS[i]) PRODUCERS[i].cnt = cnt; });
-    rRps();
-  } catch {}
-}
-setInterval(save, 5000);
-
-// ── 게임 루프 ─────────────────────────────────────────────────────────────
-let lastT = performance.now();
-function loop(now) {
-  const dt = (now - lastT) / 1000; lastT = now;
-  if (G.rps > 0) { const g = G.rps * dt; G.rice += g; G.total += g; }
-  // 자동 클릭
-  if (G.autoClick) {
-    G.autoClickAccum = (G.autoClickAccum || 0) + dt * (G.autoClickRate || 1);
-    if (G.autoClickAccum >= 1) {
-      const n = Math.floor(G.autoClickAccum); G.autoClickAccum -= n;
-      G.rice += G.clickPow * n; G.total += G.clickPow * n;
-      G.clicks = (G.clicks || 0) + n;
-    }
-  }
-  renderHUD(); chkAch();
-  requestAnimationFrame(loop);
-}
-setInterval(render, 1200);
-
-// ── 초기화 ────────────────────────────────────────────────────────────────
-load();
-const sn = localStorage.getItem('rice_my_name') || '';
-if (sn) document.getElementById('nickInput').value = sn;
-renderAch(); render();
-renderSimLb(); renderClickerLb();
-requestAnimationFrame(loop);
-</script>
 </body>
 </html>
