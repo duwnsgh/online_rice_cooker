@@ -344,73 +344,115 @@ function getUUID() { let u = localStorage.getItem('rice_user_uuid'); if (!u) { u
 const MY_UUID = getUUID();
 
 // ── 상태 ─────────────────────────────────────────────────────────────────
-const G = { rice: 0, total: 0, clickPow: 1, rps: 0, prodMul: 1, clicks: 0, autoClick: false, autoClickAccum: 0 };
+const G = { rice: 0, total: 0, clickPow: 1, rps: 0, prodMulBonus: 0, clicks: 0, autoClick: false, autoClickAccum: 0, autoClickRate: 1 };
+// prodMul 계산: 1 + 보너스 합산 (곱연산 누적 방지)
+const getPM = () => 1 + G.prodMulBonus;
 
-// ── 업그레이드 (클릭 파워 대폭 추가) ─────────────────────────────────────
+// ── 업그레이드 ─────────────────────────────────────────────────────────────
+// [생산 업글] mP(x) = prodMulBonus += x  →  최종 배율 = 1 + 합산값 (곱연산 폭발 방지)
+// [클릭 배율] 과거 ×1.5/×2/×3/×5/×10 → ×1.3/×1.8/×2.5/×4/×8 로 감쇠
 const UPGRADES = [
-  { id:'u1',  name:'좋은 쌀',       desc:'클릭당 +2',          tag:'클릭', cost:50,       max:5, lv:0, fn:()=>{ G.clickPow+=2; }},
-  { id:'u2',  name:'화력 강화',     desc:'클릭당 +5',          tag:'클릭', cost:200,      max:5, lv:0, fn:()=>{ G.clickPow+=5; }},
-  { id:'u3',  name:'증기 조절',     desc:'자동생산 ×1.5',      tag:'생산', cost:500,      max:3, lv:0, fn:()=>mP(1.5)},
-  { id:'u4',  name:'터보 화력',     desc:'클릭당 +20',         tag:'클릭', cost:2000,     max:3, lv:0, fn:()=>{ G.clickPow+=20; }},
-  { id:'u5',  name:'스마트 밥솥',   desc:'자동생산 ×2',        tag:'생산', cost:5000,     max:2, lv:0, fn:()=>mP(2)},
-  { id:'u6',  name:'황금 쌀',       desc:'클릭당 +100',        tag:'클릭', cost:20000,    max:3, lv:0, fn:()=>{ G.clickPow+=100; }},
-  { id:'u7',  name:'손목 단련',     desc:'클릭당 +300',        tag:'클릭', cost:60000,    max:3, lv:0, fn:()=>{ G.clickPow+=300; }},
-  { id:'u8',  name:'자동 클릭',     desc:'초당 자동 1클릭',    tag:'특수', cost:30000,    max:1, lv:0, fn:()=>{ G.autoClick=true; }},
-  { id:'u9',  name:'황금 손',       desc:'클릭 파워 ×1.5',    tag:'클릭', cost:100000,   max:3, lv:0, fn:()=>{ G.clickPow=Math.floor(G.clickPow*1.5); }},
-  { id:'u10', name:'초밥 기술',     desc:'클릭당 +1000',       tag:'클릭', cost:300000,   max:3, lv:0, fn:()=>{ G.clickPow+=1000; }},
-  { id:'u11', name:'생산 가속',     desc:'자동생산 ×3',        tag:'생산', cost:500000,   max:1, lv:0, fn:()=>mP(3)},
-  { id:'u12', name:'장인의 손길',   desc:'클릭당 +5000',       tag:'클릭', cost:1500000,  max:2, lv:0, fn:()=>{ G.clickPow+=5000; }},
-  { id:'u13', name:'신의 레시피',   desc:'클릭 파워 ×2',       tag:'클릭', cost:3000000,  max:1, lv:0, fn:()=>{ G.clickPow*=2; }},
-  { id:'u14', name:'극한 자동화',   desc:'자동생산 ×5',        tag:'생산', cost:5000000,  max:1, lv:0, fn:()=>mP(5)},
-  { id:'u15', name:'전설의 손',     desc:'클릭당 +50000',      tag:'클릭', cost:10000000, max:2, lv:0, fn:()=>{ G.clickPow+=50000; }},
+  // ── 초반 ──
+  { id:'u1',  name:'좋은 쌀',       desc:'클릭당 +2',              tag:'클릭', cost:30,            max:5, lv:0, fn:()=>{ G.clickPow+=2; }},
+  { id:'u2',  name:'화력 강화',     desc:'클릭당 +5',              tag:'클릭', cost:150,           max:5, lv:0, fn:()=>{ G.clickPow+=5; }},
+  { id:'u3',  name:'증기 조절',     desc:'생산 보너스 +60%',       tag:'생산', cost:500,           max:3, lv:0, fn:()=>mP(0.6)},
+  { id:'u4',  name:'터보 화력',     desc:'클릭당 +20',             tag:'클릭', cost:2000,          max:3, lv:0, fn:()=>{ G.clickPow+=20; }},
+  { id:'u5',  name:'스마트 밥솥',   desc:'생산 보너스 +100%',      tag:'생산', cost:5000,          max:2, lv:0, fn:()=>mP(1.0)},
+  { id:'u6',  name:'황금 쌀',       desc:'클릭당 +100',            tag:'클릭', cost:18000,         max:3, lv:0, fn:()=>{ G.clickPow+=100; }},
+  { id:'u7',  name:'손목 단련',     desc:'클릭당 +300',            tag:'클릭', cost:55000,         max:3, lv:0, fn:()=>{ G.clickPow+=300; }},
+  { id:'u8',  name:'자동 클릭',     desc:'초당 자동 1클릭',        tag:'특수', cost:25000,         max:1, lv:0, fn:()=>{ G.autoClick=true; }},
+  // ── 중반 ──
+  { id:'u9',  name:'황금 손',       desc:'클릭 파워 ×1.3',        tag:'클릭', cost:100000,        max:3, lv:0, fn:()=>{ G.clickPow=Math.floor(G.clickPow*1.3); }},
+  { id:'u10', name:'초밥 기술',     desc:'클릭당 +1,000',          tag:'클릭', cost:300000,        max:3, lv:0, fn:()=>{ G.clickPow+=1000; }},
+  { id:'u11', name:'생산 가속',     desc:'생산 보너스 +250%',      tag:'생산', cost:500000,        max:1, lv:0, fn:()=>mP(2.5)},
+  { id:'u12', name:'장인의 손길',   desc:'클릭당 +5,000',          tag:'클릭', cost:1500000,       max:2, lv:0, fn:()=>{ G.clickPow+=5000; }},
+  { id:'u13', name:'신의 레시피',   desc:'클릭 파워 ×1.8',        tag:'클릭', cost:3000000,       max:1, lv:0, fn:()=>{ G.clickPow=Math.floor(G.clickPow*1.8); }},
+  { id:'u14', name:'극한 자동화',   desc:'생산 보너스 +500%',      tag:'생산', cost:5000000,       max:1, lv:0, fn:()=>mP(5.0)},
+  { id:'u15', name:'전설의 손',     desc:'클릭당 +50,000',         tag:'클릭', cost:10000000,      max:2, lv:0, fn:()=>{ G.clickPow+=50000; }},
+  { id:'ux1', name:'쌀 최적화',     desc:'생산 보너스 +800%',      tag:'생산', cost:15000000,      max:1, lv:0, fn:()=>mP(8.0)},
+  { id:'ux2', name:'마스터 손목',   desc:'클릭당 +80,000',         tag:'클릭', cost:20000000,      max:2, lv:0, fn:()=>{ G.clickPow+=80000; }},
+  // ── 후반 ──
+  { id:'u17', name:'밥알 폭풍',     desc:'클릭당 +300,000',        tag:'클릭', cost:40000000,      max:2, lv:0, fn:()=>{ G.clickPow+=300000; }},
+  { id:'u18', name:'생산 혁명',     desc:'생산 보너스 +1,500%',    tag:'생산', cost:80000000,      max:1, lv:0, fn:()=>mP(15.0)},
+  { id:'u19', name:'신의 손목',     desc:'클릭 파워 ×2.5',        tag:'클릭', cost:150000000,     max:1, lv:0, fn:()=>{ G.clickPow=Math.floor(G.clickPow*2.5); }},
+  { id:'u16', name:'터보 자동클릭', desc:'자동클릭 5회/초로 강화', tag:'특수', cost:200000000,     max:1, lv:0, fn:()=>{ G.autoClickRate=5; }},
+  { id:'u20', name:'은하 자동화',   desc:'생산 보너스 +3,000%',    tag:'생산', cost:600000000,     max:1, lv:0, fn:()=>mP(30.0)},
+  { id:'u21', name:'빅뱅 클릭',     desc:'클릭당 +5,000,000',      tag:'클릭', cost:1200000000,    max:2, lv:0, fn:()=>{ G.clickPow+=5000000; }},
+  { id:'u22', name:'클릭 신',       desc:'클릭 파워 ×4',          tag:'클릭', cost:6000000000,    max:1, lv:0, fn:()=>{ G.clickPow=Math.floor(G.clickPow*4); }},
+  { id:'u23', name:'우주 자동화',   desc:'생산 보너스 +8,000%',    tag:'생산', cost:25000000000,   max:1, lv:0, fn:()=>mP(80.0)},
+  { id:'u24', name:'전설의 레시피', desc:'클릭당 +50,000,000',     tag:'클릭', cost:60000000000,   max:2, lv:0, fn:()=>{ G.clickPow+=50000000; }},
+  { id:'u25', name:'밥의 창조주',   desc:'클릭 파워 ×8',          tag:'클릭', cost:300000000000,  max:1, lv:0, fn:()=>{ G.clickPow=Math.floor(G.clickPow*8); }},
+  { id:'u26', name:'무한 생산로',   desc:'생산 보너스 +20,000%',   tag:'생산', cost:1500000000000, max:1, lv:0, fn:()=>mP(200.0)},
 ];
-
-// ── 생산자 ────────────────────────────────────────────────────────────────
+// ── 생산자 (bRps 재조정 + 구매 스케일 1.15→1.10) ─────────────────────────
+// 비용 단계비 ~5x / RPS 단계비 ~3.5-4.5x  →  후반 갈수록 cost-eff 소폭 감소 (의도적)
 const PRODUCERS = [
-  { id:'p1', name:'쌀숭이', icon:'🐒', desc:'우우우 쌀쌀쌀',   base:15,    cnt:0, bRps:.1  },
-  { id:'p2', name:'증기 기관', icon:'💨',   desc:'증기 배출이 시작됩니다.',  base:100,   cnt:0, bRps:.5  },
-  { id:'p3', name:'가마솥',   icon:'🍲',   desc:'시골의 그맛',     base:500,   cnt:0, bRps:2   },
-  { id:'p4', name:'논밭',     icon:'🌾',   desc:'논두렁입니다.',     base:2000,  cnt:0, bRps:8   },
-  { id:'p5', name:'밥솥 공장',   icon:'🏭',   desc:'쿠쿠 본사입니다.',      base:8000,  cnt:0, bRps:25  },
-  { id:'p6', name:'밥의 국가',   icon:'⚪',   desc:'오직 밥만을 위한 지배령입니다.', base:40000, cnt:0, bRps:100 },
-  { id:'p7', name:'쌀융합',   icon:'☢️',   desc:'핵 에너지로 쌀을 제조합니다.', base:240000, cnt:0, bRps:400 },
-  { id:'p8', name:'쌀리 커크',   icon:'🧑🏻',   desc:'위 얼 쌀리 커크~~', base:1000000, cnt:0, bRps:1600 },
-  { id:'p9', name:'다이슨 밥솥-스피어',   icon:'☀️',   desc:'우주 궤도의 초거대 밥솥입니다.', base:8000000, cnt:0, bRps:8000 },
+  { id:'p1',  name:'쌀숭이',            icon:'🐒', desc:'쌀을 캐는 원숭이 우우우',                         base:15,          cnt:0, bRps:0.2    },
+  { id:'p2',  name:'증기 기관',         icon:'💨', desc:'증기 배출이 시작됩니다.',                base:80,          cnt:0, bRps:0.8    },
+  { id:'p3',  name:'가마솥',            icon:'🍲', desc:'시골의 그맛',                            base:400,         cnt:0, bRps:3.5    },
+  { id:'p4',  name:'논밭',              icon:'🌾', desc:'논두렁입니다.',                          base:1800,        cnt:0, bRps:13     },
+  { id:'p5',  name:'밥솥 공장',         icon:'🏭', desc:'쿠쿠 본사입니다.',                       base:7000,        cnt:0, bRps:45     },
+  { id:'p6',  name:'백미 제국',         icon:'⚪', desc:'오직 만을 위한 지배령입니다.',         base:30000,       cnt:0, bRps:160    },
+  { id:'p7',  name:'쌀융합',            icon:'☢️', desc:'핵 에너지로 쌀을 제조합니다.',           base:150000,      cnt:0, bRps:600    },
+  { id:'p8',  name:'쌀리 커크',         icon:'🧑🏻', desc:'We are salie kirk',                   base:700000,      cnt:0, bRps:2200   },
+  { id:'p9',  name:'다이슨 밥솥-스피어', icon:'☀️', desc:'달과 지구사이의 초거대 밥솥입니다.',       base:5000000,     cnt:0, bRps:9000   },
+  { id:'p10', name:'제프리 쌀스타인',           icon:'👨🏻‍🦳', desc:'비밀 섬에서 만들어지는 쌀',         base:35000000,    cnt:0, bRps:38000  },
+  { id:'p11', name:'쌀틀러와 쌀탈린',      icon:'🙋🏻‍♂️', desc:'특이한 콧수염을 가진 사람 둘이 만드는 쌀입니다.',       base:250000000,   cnt:0, bRps:150000 },
+  { id:'p12', name:'쌀타 할아버지',              icon:'🎅', desc:'누군가 배달해준 쌀입니다.',       base:2000000000,  cnt:0, bRps:600000 },
+  { id:'p13', name:'쌀툴루',         icon:'👁️', desc:'쌀툴루 신화의 주신입니다.', base:18000000000, cnt:0, bRps:2500000},
+  { id:'p14', name:'입떡',         icon:'🎺', desc:'쌀을 소비하는 곳입니다.', base:100000000000000, cnt:0, bRps:0},
 ];
 
-const mP = m => { G.prodMul *= m; rRps(); };
-const rRps = () => { G.rps = PRODUCERS.reduce((s, p) => s + p.cnt * p.bRps * G.prodMul, 0); };
-const pC = p => Math.floor(p.base * Math.pow(1.15, p.cnt));
-const uC = u => Math.floor(u.cost * Math.pow(1.8, u.lv));
+// prodMulBonus 덧셈 누적 (곱연산 아님 — 최종배율 = 1 + 합산값)
+const mP = b => { G.prodMulBonus = (G.prodMulBonus||0) + b; rRps(); };
+const rRps = () => { G.rps = PRODUCERS.reduce((s, p) => s + p.cnt * p.bRps * getPM(), 0); };
+// 생산자 구매 스케일: 1.10^n  (50개 사면 117배, 이전엔 1083배)
+const pC = p => Math.floor(p.base * Math.pow(1.10, p.cnt));
+// 업글 레벨 비용 스케일: 1.6^lv (멀티레벨 부담 완화)
+const uC = u => Math.floor(u.cost * Math.pow(1.6, u.lv));
 
 // ── 밥솥 레벨 ─────────────────────────────────────────────────────────────
 const POT_LVS = [
-  { min:0,       name:'일반 밥솥',   deco:null      },
-  { min:500,     name:'압력 밥솥',   deco:null      },
-  { min:3000,    name:'초고압 밥솥',     deco:'dSilver' },
-  { min:20000,   name:'스마트 밥솥', deco:'dSilver' },
-  { min:100000,  name:'황금 밥솥',   deco:'dGold'   },
-  { min:500000,  name:'레전더리 밥솥', deco:'dLegend' },
+  { min:0,            name:'일반 밥솥',     deco:null      },
+  { min:500,          name:'압력 밥솥',     deco:null      },
+  { min:3000,         name:'초고압 밥솥',   deco:'dSilver' },
+  { min:20000,        name:'스마트 밥솥',   deco:'dSilver' },
+  { min:100000,       name:'황금 밥솥',     deco:'dGold'   },
+  { min:500000,       name:'레전더리 밥솥', deco:'dLegend' },
+  { min:5000000,      name:'우주 밥솥',     deco:'dLegend' },
+  { min:100000000,    name:'신화 밥솥',     deco:'dLegend' },
+  { min:5000000000,   name:'창조주의 밥솥', deco:'dLegend' },
+  { min:1000000000000,name:'태초의 밥솥',     deco:'dLegend' },
 ];
 function getPotLv() { let l = 0; POT_LVS.forEach((p, i) => { if (G.total >= p.min) l = i; }); return { lv: l + 1, ...POT_LVS[l] }; }
 
 // ── 업적 ─────────────────────────────────────────────────────────────────
 const ACHS = [
-  { id:'a1',  name:'첫 밥알',      icon:'🌱', chk:()=>G.total>=1,                                         done:false },
-  { id:'a2',  name:'100개의 밥알',   icon:'🍚', chk:()=>G.total>=100,                                        done:false },
-  { id:'a3',  name:'한 공기',  icon:'🏃', chk:()=>G.total>=4000,                                       done:false },
-  { id:'a4',  name:'만알의 꿈',    icon:'✨', chk:()=>G.total>=10000,                                      done:false },
-  { id:'a5',  name:'십만알 황금',  icon:'🌟', chk:()=>G.total>=100000,                                     done:false },
-  { id:'a6',  name:'백만 밥알',    icon:'💫', chk:()=>G.total>=1000000,                                    done:false },
-  { id:'a7',  name:'억만장자',     icon:'💎', chk:()=>G.total>=100000000,                                  done:false },
-  { id:'a8',  name:'첫 고용',      icon:'👨‍🍳', chk:()=>PRODUCERS.some(p=>p.cnt>=1),                        done:false },
-  { id:'a9',  name:'소규모 공장',  icon:'🏭', chk:()=>PRODUCERS.reduce((s,p)=>s+p.cnt,0)>=10,             done:false },
-  { id:'a10', name:'대형 공장',    icon:'🏗', chk:()=>PRODUCERS.reduce((s,p)=>s+p.cnt,0)>=50,             done:false },
-  { id:'a11', name:'클릭왕',       icon:'👆', chk:()=>G.clicks>=1000,                                      done:false },
-  { id:'a12', name:'손가락 부자',  icon:'💪', chk:()=>G.clicks>=10000,                                     done:false },
+  { id:'a1',  name:'첫 밥알',        icon:'🌱', chk:()=>G.total>=1,                                                    done:false },
+  { id:'a2',  name:'100개의 밥알',   icon:'🍚', chk:()=>G.total>=100,                                                   done:false },
+  { id:'a3',  name:'한 공기',        icon:'🏃', chk:()=>G.total>=4000,                                                  done:false },
+  { id:'a4',  name:'만알의 꿈',      icon:'✨', chk:()=>G.total>=10000,                                                 done:false },
+  { id:'a5',  name:'십만알 황금',    icon:'🌟', chk:()=>G.total>=100000,                                                done:false },
+  { id:'a6',  name:'백만 밥알',      icon:'💫', chk:()=>G.total>=1000000,                                               done:false },
+  { id:'a7',  name:'억만장자',       icon:'💎', chk:()=>G.total>=100000000,                                             done:false },
+  { id:'a8',  name:'첫 고용',        icon:'👨‍🍳', chk:()=>PRODUCERS.some(p=>p.cnt>=1),                                  done:false },
+  { id:'a9',  name:'소규모 공장',    icon:'🏭', chk:()=>PRODUCERS.reduce((s,p)=>s+p.cnt,0)>=10,                        done:false },
+  { id:'a10', name:'대형 공장',      icon:'🏗',  chk:()=>PRODUCERS.reduce((s,p)=>s+p.cnt,0)>=50,                       done:false },
+  { id:'a11', name:'클릭왕',         icon:'👆', chk:()=>G.clicks>=1000,                                                 done:false },
+  { id:'a12', name:'손가락 부자',    icon:'💪', chk:()=>G.clicks>=10000,                                                done:false },
+  // ── 신규 업적 ──
+  { id:'a13', name:'천만알 돌파',    icon:'🔥', chk:()=>G.total>=10000000,                                              done:false },
+  { id:'a14', name:'10억 밥알',      icon:'🚀', chk:()=>G.total>=1000000000,                                            done:false },
+  { id:'a15', name:'조 단위 농부',   icon:'🌌', chk:()=>G.total>=1000000000000,                                         done:false },
+  { id:'a16', name:'자본가', icon:'🎪', chk:()=>PRODUCERS.every(p=>p.cnt>=1),                                 done:false },
+  { id:'a17', name:'100인 군단',     icon:'⚔️', chk:()=>PRODUCERS.reduce((s,p)=>s+p.cnt,0)>=100,                       done:false },
+  { id:'a18', name:'클릭 마스터',    icon:'🖱️', chk:()=>G.clicks>=100000,                                              done:false },
+  { id:'a19', name:'자동화의 왕',    icon:'🤖', chk:()=>G.autoClick&&(G.autoClickRate||1)>=5,                           done:false },
+  { id:'a20', name:'백미상제',        icon:'⛩️', chk:()=>G.total>=1e15,                                                  done:false },
 ];
 
 const fmt = n => {
+  if (n >= 1e15) return (n/1e15).toFixed(2)+'Q';
   if (n >= 1e12) return (n/1e12).toFixed(2)+'T';
   if (n >= 1e9)  return (n/1e9).toFixed(2)+'B';
   if (n >= 1e6)  return (n/1e6).toFixed(2)+'M';
@@ -494,7 +536,7 @@ function renderProd() {
       <div class="prod-icon">${p.icon}</div>
       <div class="prod-info">
         <div class="prod-name">${p.name}</div>
-        <div class="prod-desc">${p.desc} · 초당 ${(p.bRps*G.prodMul).toFixed(2)}</div>
+        <div class="prod-desc">${p.desc} · 초당 ${(p.bRps*getPM()).toFixed(2)}</div>
       </div>
       <div class="prod-right">
         <div class="prod-cnt">${p.cnt}</div>
@@ -639,8 +681,8 @@ async function submitClicker() {
 // ── 저장 / 불러오기 ───────────────────────────────────────────────────────
 function save() {
   localStorage.setItem('riceClicker', JSON.stringify({
-    rice: G.rice, total: G.total, clickPow: G.clickPow, prodMul: G.prodMul,
-    autoClick: G.autoClick, clicks: G.clicks || 0,
+    rice: G.rice, total: G.total, clickPow: G.clickPow, prodMulBonus: G.prodMulBonus||0,
+    autoClick: G.autoClick, clicks: G.clicks || 0, autoClickRate: G.autoClickRate || 1,
     upgs: UPGRADES.map(u => u.lv),
     prods: PRODUCERS.map(p => p.cnt)
   }));
@@ -650,8 +692,9 @@ function load() {
     const s = JSON.parse(localStorage.getItem('riceClicker') || 'null');
     if (!s) return;
     G.rice = s.rice || 0; G.total = s.total || 0;
-    G.clickPow = s.clickPow || 1; G.prodMul = s.prodMul || 1;
+    G.clickPow = s.clickPow || 1; G.prodMulBonus = s.prodMulBonus || 0;
     G.autoClick = s.autoClick || false; G.clicks = s.clicks || 0;
+    G.autoClickRate = s.autoClickRate || 1;
     s.upgs?.forEach((lv, i) => { if (UPGRADES[i]) UPGRADES[i].lv = lv; });
     s.prods?.forEach((cnt, i) => { if (PRODUCERS[i]) PRODUCERS[i].cnt = cnt; });
     rRps();
@@ -666,7 +709,7 @@ function loop(now) {
   if (G.rps > 0) { const g = G.rps * dt; G.rice += g; G.total += g; }
   // 자동 클릭
   if (G.autoClick) {
-    G.autoClickAccum = (G.autoClickAccum || 0) + dt;
+    G.autoClickAccum = (G.autoClickAccum || 0) + dt * (G.autoClickRate || 1);
     if (G.autoClickAccum >= 1) {
       const n = Math.floor(G.autoClickAccum); G.autoClickAccum -= n;
       G.rice += G.clickPow * n; G.total += G.clickPow * n;
