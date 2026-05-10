@@ -337,7 +337,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 <script>
 // ── Firebase ──────────────────────────────────────────────────────────────
-const FB = 'https://rice-cooker-bef93-default-rtdb.asia-southeast1.firebasedatabase.app';
+const FB = 'https://rice-online-23d6f-default-rtdb.asia-southeast1.firebasedatabase.app';
 const fbGet = async p => { try { return await (await fetch(`${FB}/${p}.json`)).json(); } catch { return null; } };
 const fbSet = async (p, d) => { try { await fetch(`${FB}/${p}.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) }); } catch {} };
 function getUUID() { let u = localStorage.getItem('rice_user_uuid'); if (!u) { u = 'u-' + Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 9); localStorage.setItem('rice_user_uuid', u); } return u; }
