@@ -336,6 +336,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <div class="toast" id="toast"></div>
 
 <script>
+localStorage.clear();
 // ── Firebase ──────────────────────────────────────────────────────────────
 const FB = 'https://rice-online-23d6f-default-rtdb.asia-southeast1.firebasedatabase.app';
 const fbGet = async p => { try { return await (await fetch(`${FB}/${p}.json`)).json(); } catch { return null; } };
