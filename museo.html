@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JHY Museo - 미술관</title>
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0f0e0c;
+      --surface: #1a1815;
+      --surface2: #232018;
+      --border: #35302a;
+      --accent: #e8a020;
+      --text: #f0ebe0;
+      --muted: #7a7060;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    /* Grainy Texture */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 999; opacity: 0.5;
+    }
+
+    /* NAV (Shared) */
+    .site-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 20px;
+      background: rgba(15,14,12,0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(232,160,32,0.12);
+    }
+    .nav-brand {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 1rem; color: var(--accent);
+      text-decoration: none; letter-spacing: 0.04em;
+    }
+    .nav-tabs { display: flex; gap: 6px; }
+    .nav-tab {
+      padding: 6px 14px; border-radius: 20px;
+      font-size: 0.8rem; font-weight: 700;
+      text-decoration: none; transition: all .2s;
+      border: 1.5px solid transparent;
+    }
+    .nav-tab.on  { background: var(--accent); color: #1a0f00; }
+    .nav-tab.off { border-color: rgba(232,160,32,0.25); color: var(--muted); }
+    .nav-tab.off:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* HEADER */
+    .header {
+      padding: 140px 24px 60px;
+      text-align: center;
+      max-width: 1000px; margin: 0 auto;
+    }
+    .header-label {
+      font-size: 11px; letter-spacing: 0.3em;
+      color: var(--accent); text-transform: uppercase;
+      margin-bottom: 16px; display: block;
+    }
+    .header-title {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: clamp(32px, 6vw, 56px);
+      margin-bottom: 20px;
+    }
+
+    /* GALLERY GRID */
+    .gallery-container {
+      max-width: 1100px; margin: 0 auto;
+      padding: 0 24px 100px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 30px;
+    }
+    .art-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px;
+      cursor: pointer;
+      transition: transform 0.3s cubic-bezier(0.2, 0, 0.2, 1);
+      position: relative;
+    }
+    .art-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--accent);
+    }
+    .art-frame {
+      width: 100%;
+      aspect-ratio: 4/5;
+      overflow: hidden;
+      background: #000;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .art-frame img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: grayscale(0.2);
+      transition: filter 0.3s, transform 0.5s;
+    }
+    .art-card:hover img {
+      filter: grayscale(0);
+      transform: scale(1.05);
+    }
+    .art-info { text-align: left; }
+    .art-title {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 18px; color: var(--accent);
+      margin-bottom: 4px;
+    }
+    .art-author {
+      font-size: 13px; color: var(--muted);
+    }
+
+    /* MODAL */
+    .modal {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 10000;
+      display: none; align-items: center; justify-content: center;
+      padding: 40px;
+      backdrop-filter: blur(8px);
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      max-width: 90%; max-height: 90%;
+      position: relative;
+    }
+    .modal-img {
+      max-width: 100%; max-height: 80vh;
+      border: 10px solid #fff;
+      box-shadow: 0 0 50px rgba(0,0,0,0.5);
+    }
+    .modal-caption {
+      margin-top: 20px; text-align: center;
+    }
+    .modal-close {
+      position: absolute; top: -40px; right: -40px;
+      color: #fff; font-size: 30px; cursor: pointer;
+      background: none; border: none;
+    }
+
+    footer {
+      text-align: center; padding: 60px 24px;
+      color: var(--muted); font-size: 12px;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    @media (max-width: 600px) {
+      .modal { padding: 20px; }
+      .modal-close { right: 0; top: -50px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <a class="nav-brand" href="index.html">JHY Playground</a>
+  <div class="nav-tabs">
+    <a class="nav-tab off" href="index.html">메인 페이지</a>
+    <a class="nav-tab off" href="simul.html">밥솥 시뮬레이터</a>
+    <a class="nav-tab off" href="clicker.html">밥솥 키우기</a>
+    <a class="nav-tab on"  href="museo.html">미술관</a>
+  </div>
+</nav>
+
+<header class="header">
+  <span class="header-label">ONLINE EXHIBITION</span>
+  <h1 class="header-title">레전드.jpg</h1>
+  <p style="color: var(--muted); line-height: 1.6;">시대를 초월한 걸작의 모음</p>
+</header>
+
+<main class="gallery-container">
+  <div class="art-card" onclick="openModal('assets/img/01.png', '빨간약 파란약', '빈센트 반 고흐')">
+    <div class="art-frame">
+      <img src="assets/img/01.png" alt="Art 01">
+    </div>
+    <div class="art-info">
+      <h3 class="art-title">빨간약 파란약</h3>
+      <p class="art-author">Vincent van Gogh</p>
+    </div>
+  </div>
+
+  <div class="art-card" onclick="openModal('assets/img/02.png', '가족 사진', '작자 미상')">
+    <div class="art-frame">
+      <img src="assets/img/02.png" alt="Art 02">
+    </div>
+    <div class="art-info">
+      <h3 class="art-title">가족 사진</h3>
+      <p class="art-author">Unknown Artist</p>
+    </div>
+  </div>
+
+  <div class="art-card" onclick="openModal('assets/img/03.png', '고전의 재해석', '쿠로사키 이치고')">
+    <div class="art-frame">
+      <img src="assets/img/03.png" alt="Art 03">
+    </div>
+    <div class="art-info">
+      <h3 class="art-title">고전의 재해석</h3>
+      <p class="art-author">Ichigo Kurosaki</p>
+    </div>
+  </div>
+
+  <div class="art-card" onclick="openModal('assets/img/04.png', '담배의 악마', '클로드 모네')">
+    <div class="art-frame">
+      <img src="assets/img/04.png" alt="Art 04">
+    </div>
+    <div class="art-info">
+      <h3 class="art-title">담배의 악마</h3>
+      <p class="art-author">Claude Monet Style</p>
+    </div>
+  </div>
+
+  <div class="art-card" onclick="openModal('assets/img/05.png', '배응망덕', '작자미상')">
+    <div class="art-frame">
+      <img src="assets/img/05.png" alt="Art 04">
+    </div>
+    <div class="art-info">
+      <h3 class="art-title">배응망덕</h3>
+      <p class="art-author">Unknown Artist</p>
+    </div>
+  </div>
+</main>
+
+<div class="modal" id="artModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <img src="" alt="" class="modal-img" id="modalImg">
+    <div class="modal-caption">
+      <h2 class="art-title" id="modalTitle" style="font-size: 24px;"></h2>
+      <p class="art-author" id="modalAuthor"></p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>Collection by <a href="index.html">@jhy.370937</a> | 2026 JHY</p>
+</footer>
+
+<script>
+  const modal = document.getElementById('artModal');
+  const modalImg = document.getElementById('modalImg');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalAuthor = document.getElementById('modalAuthor');
+
+  function openModal(src, title, author) {
+    modalImg.src = src;
+    modalTitle.innerText = title;
+    modalAuthor.innerText = author;
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; 
+  }
+
+  function closeModal() {
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+</script>
+
+</body>
+</html>
