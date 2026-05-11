@@ -1,133 +1,387 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>서버 점검 안내</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JHY Playground</title>
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
   <style>
-    :root{
-      --bg:#0f0e0c;
-      --surface:#1a1815;
-      --border:#35302a;
-      --accent:#e8a020;
-      --text:#f0ebe0;
-      --muted:#7a7060;
+    :root {
+      --bg: #0f0e0c;
+      --surface: #1a1815;
+      --surface2: #232018;
+      --border: #35302a;
+      --accent: #e8a020;
+      --text: #f0ebe0;
+      --muted: #7a7060;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 999; opacity: 0.5;
     }
 
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
+    /* NAV */
+    .site-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 20px;
+      background: rgba(15,14,12,0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(232,160,32,0.12);
+    }
+    .nav-brand {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 1rem; color: var(--accent);
+      text-decoration: none; letter-spacing: 0.04em;
+    }
+    .nav-tabs { display: flex; gap: 6px; }
+    .nav-tab {
+      padding: 6px 14px; border-radius: 20px;
+      font-size: 0.8rem; font-weight: 700;
+      text-decoration: none; transition: all .2s;
+      border: 1.5px solid transparent;
+    }
+    .nav-tab.on  { background: var(--accent); color: #1a0f00; }
+    .nav-tab.off { border-color: rgba(232,160,32,0.25); color: var(--muted); }
+    .nav-tab.off:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 120px 24px 80px;
+      position: relative; text-align: center;
+    }
+    .grid-bg {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(232,160,32,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(232,160,32,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+      pointer-events: none;
+    }
+    .hero-glow {
+      position: absolute; top: 30%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 700px; height: 500px;
+      background: radial-gradient(ellipse, rgba(232,160,32,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      font-size: 11px; letter-spacing: 0.22em;
+      color: var(--accent); text-transform: uppercase;
+      margin-bottom: 22px; position: relative;
+      display: flex; align-items: center; gap: 12px;
+      opacity: 0; animation: fadeUp 0.6s 0.1s ease forwards;
+    }
+    .hero-eyebrow::before, .hero-eyebrow::after {
+      content: ''; width: 40px; height: 1px;
+      background: rgba(232,160,32,0.4);
+    }
+    .hero-title {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: clamp(46px, 11vw, 92px);
+      line-height: 1.05; letter-spacing: -2px;
+      position: relative;
+      opacity: 0; animation: fadeUp 0.6s 0.25s ease forwards;
+    }
+    .hero-title .line1 { color: var(--text); display: block; }
+    .hero-title .line2 {
+      color: var(--accent); display: block; position: relative;
+    }
+    .hero-title .line2::after {
+      content: '';
+      position: absolute; bottom: 2px; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent) 0%, transparent 80%);
+      border-radius: 2px;
+    }
+    .hero-desc {
+      margin-top: 28px;
+      font-size: clamp(13px, 1.8vw, 16px);
+      color: var(--muted); line-height: 1.85;
+      max-width: 460px; position: relative;
+      opacity: 0; animation: fadeUp 0.6s 0.4s ease forwards;
+    }
+    .hero-cta {
+      margin-top: 40px; position: relative;
+      opacity: 0; animation: fadeUp 0.6s 0.55s ease forwards;
+    }
+    .btn-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 32px;
+      font-family: 'Black Han Sans', sans-serif; font-size: 16px;
+      background: var(--accent); color: #1a0f00;
+      border-radius: 50px; text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    }
+    .btn-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(232,160,32,0.28);
+      opacity: 0.9;
+    }
+    .btn-cta:active { transform: scale(0.97); }
+    .scroll-hint {
+      position: absolute; bottom: 36px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 7px;
+      color: var(--muted); font-size: 10px; letter-spacing: 0.14em;
+      opacity: 0; animation: fadeUp 0.6s 0.9s ease forwards;
+    }
+    .scroll-arrow {
+      width: 14px; height: 14px;
+      border-right: 2px solid var(--muted);
+      border-bottom: 2px solid var(--muted);
+      transform: rotate(45deg);
+      animation: bounce 1.6s ease-in-out infinite;
+    }
+    @keyframes bounce {
+      0%,100% { transform: rotate(45deg) translateY(0); }
+      50%      { transform: rotate(45deg) translateY(4px); }
     }
 
-    body{
-      background:var(--bg);
-      color:var(--text);
-      font-family:'Noto Sans KR',sans-serif;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:24px;
-      overflow:hidden;
+    /* ABOUT STRIP */
+    .about-strip {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 56px 24px;
+    }
+    .about-inner {
+      max-width: 860px; margin: 0 auto;
+      display: flex; gap: 36px; align-items: center; flex-wrap: wrap;
+    }
+    .about-avatar {
+      width: 76px; height: 76px; border-radius: 50%;
+      background: var(--surface2);
+      border: 2px solid var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 34px; flex-shrink: 0;
+    }
+    .about-text { flex: 1; min-width: 200px; }
+    .about-handle {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 21px; color: var(--accent); margin-bottom: 8px;
+    }
+    .about-bio { font-size: 13px; color: var(--muted); line-height: 1.8; }
+
+    /* PROJECTS */
+    .section {
+      padding: 80px 24px 100px;
+      max-width: 860px; margin: 0 auto;
+    }
+    .section-label {
+      font-size: 11px; letter-spacing: 0.18em;
+      color: var(--accent); text-transform: uppercase; margin-bottom: 10px;
+    }
+    .section-title {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: clamp(24px, 5vw, 36px);
+      color: var(--text); margin-bottom: 44px; line-height: 1.2;
+    }
+    .section-title span { color: var(--accent); }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 18px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px; padding: 28px;
+      text-decoration: none; color: var(--text);
+      display: flex; flex-direction: column; gap: 14px;
+      position: relative; overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+      opacity: 0; transform: translateY(20px);
+    }
+    .card.visible { animation: fadeUp 0.5s ease forwards; }
+    .card:nth-child(1) { animation-delay: 0.05s; }
+    .card:nth-child(2) { animation-delay: 0.15s; }
+    .card:nth-child(3) { animation-delay: 0.25s; }
+
+    .card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 180px 120px at var(--mx,50%) var(--my,0%), rgba(232,160,32,0.08), transparent);
+      opacity: 0; transition: opacity 0.3s; pointer-events: none;
+    }
+    .card:hover { transform: translateY(-4px); border-color: rgba(232,160,32,0.4); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+    .card:hover::before { opacity: 1; }
+    .card.disabled { cursor: default; pointer-events: none; opacity: 0.45 !important; }
+
+    .card-icon { font-size: 34px; line-height: 1; }
+    .card-name {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 19px; color: var(--accent);
+    }
+    .card-desc { font-size: 13px; color: var(--muted); line-height: 1.75; flex: 1; }
+    .card-tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+      padding: 4px 10px; border-radius: 20px;
+      background: rgba(232,160,32,0.1); color: var(--accent);
+      border: 1px solid rgba(232,160,32,0.2); width: fit-content;
+    }
+    .card-arrow {
+      position: absolute; top: 22px; right: 22px;
+      font-size: 17px; color: var(--muted);
+      transition: transform 0.2s, color 0.2s;
+    }
+    .card:hover .card-arrow { transform: translate(3px,-3px); color: var(--accent); }
+
+    /* DIVIDER & FOOTER */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      max-width: 860px; margin: 0 auto;
+    }
+    footer {
+      text-align: center; padding: 36px 24px;
+      color: var(--muted); font-size: 12px; letter-spacing: 0.06em;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
-    body::before{
-      content:'';
-      position:fixed;
-      inset:0;
-      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      opacity:.45;
-      pointer-events:none;
-    }
-
-    .panel{
-      width:100%;
-      max-width:560px;
-      background:var(--surface);
-      border:1px solid var(--border);
-      border-radius:24px;
-      padding:42px 32px;
-      text-align:center;
-      position:relative;
-      z-index:1;
-      box-shadow:0 20px 60px rgba(0,0,0,.45);
-    }
-
-    .icon{
-      font-size:72px;
-      margin-bottom:18px;
-      animation:float 2.5s ease-in-out infinite;
-    }
-
-    h1{
-      font-size:clamp(28px,6vw,42px);
-      color:var(--accent);
-      margin-bottom:14px;
-      font-weight:900;
-      letter-spacing:-1px;
-    }
-
-    .desc{
-      color:var(--muted);
-      font-size:15px;
-      line-height:1.7;
-      margin-bottom:30px;
-    }
-
-    .time-box{
-      background:rgba(232,160,32,.08);
-      border:1px solid rgba(232,160,32,.18);
-      border-radius:16px;
-      padding:18px;
-      margin-bottom:26px;
-    }
-
-    .time-title{
-      color:var(--muted);
-      font-size:13px;
-      margin-bottom:8px;
-    }
-
-    .time{
-      font-size:22px;
-      font-weight:800;
-      color:var(--accent);
-    }
-
-    .footer{
-      font-size:13px;
-      color:var(--muted);
-      opacity:.8;
-    }
-
-    @keyframes float{
-      0%,100%{ transform:translateY(0px);}
-      50%{ transform:translateY(-8px);}
+    @media (max-width: 560px) {
+      .nav-tabs { gap: 4px; }
+      .nav-tab  { padding: 5px 9px; font-size: 0.72rem; }
+      .hero-title { letter-spacing: -1px; }
+      .cards { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-  <div class="panel">
-    <div class="icon">🍚</div>
+<nav class="site-nav">
+  <a class="nav-brand" href="index.html">JHY Playground</a>
+  <div class="nav-tabs">
+    <a class="nav-tab on"  href="index.html">메인 페이지</a>
+    <a class="nav-tab off" href="simul.html">밥솥 시뮬레이터</a>
+    <a class="nav-tab off" href="clicker.html">밥솥 키우기</a>
+  </div>
+</nav>
 
-    <h1>서버 점검중</h1>
+<!-- HERO -->
+<section class="hero">
+  <div class="grid-bg"></div>
+  <div class="hero-glow"></div>
 
-    <p class="desc">
-      현재 서버 점검 및 데이터베이스 이전 작업이 진행중입니다.<br>
-      일시적으로 접속이 제한되며, 서비스는 목요일에 다시 오픈될 예정입니다.
-    </p>
+  <p class="hero-eyebrow">JHY Playground</p>
+  <h1 class="hero-title">
+    <span class="line1">여준호의 코딩도전기</span>
+    <span class="line2">짜투리 웹사이트 모음</span>
+  </h1>
+  <p class="hero-desc">
+    쓸 말은 없지만 이즘에 텍스트가<br>
+    있어야 좋아 보일듯
+  </p>
+  <div class="hero-cta">
+    <a href="#projects" class="btn-cta">프로젝트 보기 →</a>
+  </div>
+  <div class="scroll-hint">
+    SCROLL
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
 
-    <div class="time-box">
-      <div class="time-title">예상 점검 종료</div>
-      <div class="time">목요일 예정</div>
-    </div>
-
-    <div class="footer">
-      이용에 불편을 드려 죄송합니다.
+<!-- ABOUT -->
+<div class="about-strip">
+  <div class="about-inner">
+    <div class="about-avatar">🍚</div>
+    <div class="about-text">
+      <div class="about-handle">@jhy.370937</div>
+      <p class="about-bio">
+        소소한 아이디어를 웹으로 만드는 공간입니다.
+      </p>
     </div>
   </div>
+</div>
 
+<!-- PROJECTS -->
+<section class="section" id="projects">
+  <p class="section-label">Projects</p>
+  <h2 class="section-title">지금 <span>사용할 수 있는</span> 것들</h2>
+
+  <div class="cards">
+
+    <a class="card" href="simul.html">
+      <div class="card-icon">🍳</div>
+      <div class="card-name">밥솥 시뮬레이터</div>
+      <div class="card-desc">
+        30분 타이머와 랭킹보드
+      </div>
+      <div class="card-tag">🔥 라이브</div>
+      <div class="card-arrow">↗</div>
+    </a>
+
+    <a class="card" href="clicker.html">
+      <div class="card-icon">⬆️</div>
+      <div class="card-name">밥솥 키우기</div>
+      <div class="card-desc">
+        쿠키 클리커의 열화 카피입니다.
+      </div>
+      <div class="card-tag">🎮 게임</div>
+      <div class="card-arrow">↗</div>
+    </a>
+
+    <div class="card disabled">
+      <div class="card-icon">🔧</div>
+      <div class="card-name">다음 프로젝트</div>
+      <div class="card-desc">
+        아직 만드는 중입니다. 곧 공개될 예정이에요.
+      </div>
+      <div class="card-tag">🚧 개발 중</div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<footer>
+  <p>made with 명엄 by <a href="#">@jhy.370937</a></p>
+</footer>
+
+<script>
+  // 카드 진입 애니메이션
+  const cards = document.querySelectorAll('.card:not(.disabled)');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.card').forEach(c => io.observe(c));
+
+  // 카드 마우스 글로우 트래킹
+  document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', ((e.clientX - r.left) / r.width  * 100).toFixed(1) + '%');
+      card.style.setProperty('--my', ((e.clientY - r.top)  / r.height * 100).toFixed(1) + '%');
+    });
+  });
+
+  // 앵커 스무스 스크롤
+  document.querySelector('.btn-cta').addEventListener('click', e => {
+    e.preventDefault();
+    document.getElementById('projects').scrollIntoView({ behavior: 'smooth' });
+  });
+</script>
 </body>
 </html>
