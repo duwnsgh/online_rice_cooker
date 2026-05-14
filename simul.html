@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -627,3 +628,633 @@
 </script>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>온라인 전기밥솥</title>
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    .site-nav{position:fixed;top:0;left:0;right:0;z-index:9000;display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:rgba(15,14,12,0.92);backdrop-filter:blur(14px);border-bottom:1px solid rgba(232,160,32,0.12);}
+    .nav-brand{font-family:'Black Han Sans',sans-serif;font-size:1rem;color:#e8a020;text-decoration:none;letter-spacing:0.04em;}
+    .nav-tabs{display:flex;gap:6px;}
+    .nav-tab{padding:6px 14px;border-radius:20px;font-size:0.8rem;font-weight:700;text-decoration:none;transition:all .2s;border:1.5px solid transparent;}
+    .nav-tab.on{background:#e8a020;color:#1a0f00;}
+    .nav-tab.off{border-color:rgba(232,160,32,0.25);color:#7a7060;}
+    .nav-tab.off:hover{border-color:#e8a020;color:#e8a020;}
+    :root {
+      --bg: #0f0e0c;
+      --surface: #1a1815;
+      --surface2: #232018;
+      --border: #35302a;
+      --accent: #e8a020;
+      --text: #f0ebe0;
+      --muted: #7a7060;
+      --danger: #c0392b;
+      --success: #4a9940;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 92px 16px 80px;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.5;
+    }
+    h1 {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: clamp(28px, 6vw, 44px);
+      letter-spacing: -1px;
+      color: var(--accent);
+      margin-bottom: 4px;
+      text-align: center;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 40px;
+      text-align: center;
+    }
+    .container { width: 100%; max-width: 420px; }
+
+    /* 밥솥 영역 */
+    .cooker-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px 24px;
+      text-align: center;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    /* 이미지 밥솥 */
+    .cooker-img-wrap {
+      position: relative;
+      width: 200px;
+      margin: 0 auto 20px;
+    }
+    .cooker-img {
+      width: 200px;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+      transition: filter 0.4s;
+    }
+    .cooker-img.cooking { filter: brightness(1.15) saturate(1.2); }
+    .cooker-img.done    { filter: brightness(1.1) hue-rotate(10deg); }
+
+    /* 증기 오버레이 */
+    .steam-overlay {
+      position: absolute;
+      top: -36px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      opacity: 0;
+      transition: opacity 0.5s;
+      pointer-events: none;
+    }
+    .steam-overlay.active { opacity: 1; }
+    .puff {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: rgba(200,200,200,0.7);
+    }
+    .steam-overlay.active .puff:nth-child(1) { animation: puff 1.4s ease-out infinite; }
+    .steam-overlay.active .puff:nth-child(2) { animation: puff 1.4s ease-out 0.45s infinite; }
+    .steam-overlay.active .puff:nth-child(3) { animation: puff 1.4s ease-out 0.9s infinite; }
+    @keyframes puff {
+      0%   { transform: translateY(0) scale(1); opacity: 0.8; }
+      100% { transform: translateY(-30px) scale(1.8); opacity: 0; }
+    }
+
+    /* 표시등 */
+    .status-light {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: #444;
+      margin: 0 auto 16px;
+      transition: background 0.4s, box-shadow 0.4s;
+    }
+    .status-light.cooking { background: var(--danger); box-shadow: 0 0 0 5px rgba(192,57,43,0.2); }
+    .status-light.done    { background: var(--success); box-shadow: 0 0 0 5px rgba(74,153,64,0.2); }
+    .status-light.steam   { background: var(--accent);  box-shadow: 0 0 0 5px rgba(232,160,32,0.2); }
+
+    .timer {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 64px;
+      letter-spacing: 2px;
+      line-height: 1;
+      margin-bottom: 8px;
+      transition: color 0.4s;
+    }
+    .timer.urgent { color: var(--danger); animation: blink 0.8s step-end infinite; }
+    @keyframes blink { 50% { opacity: 0.5; } }
+
+    .status-msg {
+      font-size: 14px;
+      color: var(--muted);
+      min-height: 22px;
+      margin-bottom: 20px;
+    }
+
+    .btn-main {
+      width: 100%;
+      padding: 16px;
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 18px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s, background 0.3s;
+      background: var(--accent);
+      color: #1a1000;
+    }
+    .btn-main:hover:not(:disabled) { opacity: 0.88; }
+    .btn-main:active:not(:disabled) { transform: scale(0.97); }
+    .btn-main:disabled {
+      background: var(--surface2);
+      color: var(--muted);
+      cursor: not-allowed;
+      border: 1px solid var(--border);
+    }
+
+    /* 닉네임 */
+    .record-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .record-box.visible { display: block; }
+    .record-box label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+    .record-row { display: flex; gap: 8px; }
+    .record-box input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px;
+      outline: none;
+    }
+    .record-box input:focus { border-color: var(--accent); }
+    .record-box button {
+      background: var(--accent);
+      color: #1a1000;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .record-box button:hover { opacity: 0.85; }
+
+    /* 랭킹 */
+    .leaderboard {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+    }
+    .lb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .lb-title { font-family: 'Black Han Sans', sans-serif; font-size: 20px; color: var(--accent); }
+    .lb-total { font-size: 12px; color: var(--muted); }
+    .lb-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .lb-row:last-child { border-bottom: none; }
+    .lb-rank { width: 28px; font-family: 'Black Han Sans', sans-serif; font-size: 16px; text-align: center; color: var(--muted); }
+    .lb-rank.top1 { color: #f0c030; }
+    .lb-rank.top2 { color: #b0b8c0; }
+    .lb-rank.top3 { color: #c08840; }
+    .lb-row-inner { position: relative; display: flex; align-items: center; gap: 12px; padding: 10px 10px; border-radius: 8px; flex: 1; }
+    .lb-bar-wrap { position: absolute; inset: 0; border-radius: 6px; overflow: hidden; z-index: 0; }
+    .lb-bar { height: 100%; background: rgba(232,160,32,0.08); transition: width 0.6s ease; }
+    .lb-name { flex: 1; font-size: 15px; font-weight: 500; position: relative; }
+    .lb-count { font-family: 'Black Han Sans', sans-serif; font-size: 18px; color: var(--accent); position: relative; }
+    .lb-unit { font-size: 12px; color: var(--muted); margin-left: 2px; position: relative; }
+    .lb-empty { text-align: center; color: var(--muted); font-size: 14px; padding: 20px 0; }
+    .my-badge {
+      font-size: 11px;
+      background: rgba(232,160,32,0.15);
+      color: var(--accent);
+      border-radius: 4px;
+      padding: 2px 6px;
+    }
+
+    /* 로딩 오버레이 */
+    #loadingOverlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 18px;
+      color: var(--accent);
+      transition: opacity 0.4s;
+    }
+    #loadingOverlay.hidden { opacity: 0; pointer-events: none; }
+  </style>
+</head>
+<body>
+<nav class="site-nav">
+  <a class="nav-brand" href="index.html">JHY Playgraund</a>
+  <div class="nav-tabs">
+    <a class="nav-tab off" href="index.html">메인 페이지</a>
+    <a class="nav-tab on" href="simul.html">밥솥 시뮬레이터</a>
+    <a class="nav-tab off" href="clicker.html">밥솥 키우기</a>
+  </div>
+</nav>
+<!-- 초기 세션 복원 중 로딩 화면 -->
+<div id="loadingOverlay">밥솥 연결 중...</div>
+
+<h1>온라인 전기밥솥</h1>
+<p class="subtitle">@jhy.370937</p>
+
+<div class="container">
+
+  <!-- 밥솥 메인 -->
+  <div class="cooker-wrap">
+    <div class="cooker-img-wrap">
+      <div class="steam-overlay" id="steamOverlay">
+        <div class="puff"></div><div class="puff"></div><div class="puff"></div>
+      </div>
+      <img class="cooker-img" id="cookerImg" src="assets/img/rice_cooker.png" alt="밥솥">
+    </div>
+    <div class="status-light" id="statusLight"></div>
+    <div class="timer" id="timer">30:00</div>
+    <div class="status-msg" id="statusMsg">밥솥이 준비됐어요. 취사를 시작해보세요!</div>
+    <button class="btn-main" id="mainBtn" onclick="handleBtn()">취사 시작</button>
+  </div>
+
+  <!-- 기록 등록 -->
+  <div class="record-box" id="recordBox">
+    <label>취사가 완료되었습니다! 닉네임을 입력하면 자동으로 기록됩니다.</label>
+    <div class="record-row">
+      <input type="text" id="nicknameInput" placeholder="닉네임 (최대 12자)" maxlength="12" />
+      <button onclick="submitRecord()">등록</button>
+    </div>
+  </div>
+
+  <!-- 랭킹 -->
+  <div class="leaderboard">
+    <div class="lb-header">
+      <div class="lb-title">취사 랭킹</div>
+      <div class="lb-total" id="lbTotal"></div>
+    </div>
+    <div id="lbList"><div class="lb-empty">아직 기록이 없어요. 첫 밥을 지어보세요!</div></div>
+  </div>
+
+</div>
+
+<script>
+  // ── 상수 ──────────────────────────────────────────────────
+  const TOTAL         = 1 * 10;   // 취사 시간 (초) ← 여기서 조정
+  const STEAM_MS      = 5000;       // 증기 배출 시간 (ms)
+  const FB_URL        = 'https://rice-online-23d6f-default-rtdb.asia-southeast1.firebasedatabase.app';
+
+  // ── 상태 ──────────────────────────────────────────────────
+  let state     = 'idle';   // idle | cooking | steaming | done
+  let remaining = TOTAL;
+  let ticker    = null;
+
+  // ── DOM ───────────────────────────────────────────────────
+  const imgEl     = document.getElementById('cookerImg');
+  const steamEl   = document.getElementById('steamOverlay');
+  const lightEl   = document.getElementById('statusLight');
+  const timerEl   = document.getElementById('timer');
+  const statusEl  = document.getElementById('statusMsg');
+  const btnEl     = document.getElementById('mainBtn');
+  const recordBox = document.getElementById('recordBox');
+  const lbList    = document.getElementById('lbList');
+  const lbTotal   = document.getElementById('lbTotal');
+  const loadingEl = document.getElementById('loadingOverlay');
+
+  // ── 유틸 ──────────────────────────────────────────────────
+  function pad(n)  { return String(n).padStart(2, '0'); }
+  function fmt(s)  { return pad(Math.floor(s / 60)) + ':' + pad(s % 60); }
+
+  // ── 완료 효과음 (playDone 정의) ───────────────────────────
+  function playDone() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const beep = (freq, start, dur) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(0.35, ctx.currentTime + start);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+        o.start(ctx.currentTime + start);
+        o.stop(ctx.currentTime + start + dur);
+      };
+      // 딩동댕 3음
+      beep(880,  0,    0.3);
+      beep(1046, 0.35, 0.3);
+      beep(1318, 0.7,  0.6);
+    } catch(e) {}
+  }
+
+  // ── UUID (브라우저당 고정) ─────────────────────────────────
+  function getOrCreateUUID() {
+    let uid = localStorage.getItem('rice_user_uuid');
+    if (!uid) {
+      uid = 'u-' + Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('rice_user_uuid', uid);
+    }
+    return uid;
+  }
+  const myUUID = getOrCreateUUID();
+
+  // ── Firebase REST ──────────────────────────────────────────
+  async function fbGet(path) {
+    try {
+      const res = await fetch(`${FB_URL}/${path}.json`);
+      return await res.json();
+    } catch(e) { return null; }
+  }
+  async function fbSet(path, data) {
+    try {
+      await fetch(`${FB_URL}/${path}.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    } catch(e) {}
+  }
+  async function fbPatch(path, data) {
+    try {
+      await fetch(`${FB_URL}/${path}.json`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    } catch(e) {}
+  }
+
+  // ── 시각 업데이트 ──────────────────────────────────────────
+  function setVisual() {
+    imgEl.className  = 'cooker-img';
+    lightEl.className = 'status-light';
+
+    if (state === 'idle') {
+      timerEl.textContent = fmt(TOTAL);
+      timerEl.style.color = '';
+      timerEl.classList.remove('urgent');
+      statusEl.textContent = '밥솥이 준비됐어요. 취사를 시작해보세요!';
+      btnEl.textContent = '취사 시작';
+      btnEl.disabled = false;
+      btnEl.style.background = '';
+      btnEl.style.color = '';
+    } else if (state === 'cooking') {
+      imgEl.classList.add('cooking');
+      lightEl.classList.add('cooking');
+      statusEl.textContent = '취사중 입니다.';
+      btnEl.textContent = '취사 중';
+      btnEl.disabled = true;
+      timerEl.style.color = '';
+    } else if (state === 'steaming') {
+      lightEl.classList.add('steam');
+      timerEl.style.color = 'var(--accent)';
+      timerEl.classList.remove('urgent');
+      statusEl.textContent = '취사가 완료되었습니다. 증기 배출을 시작합니다.';
+      btnEl.textContent = '잠시만 기다려 주세요';
+      btnEl.disabled = true;
+    } else if (state === 'done') {
+      imgEl.classList.add('done');
+      lightEl.classList.add('done');
+      timerEl.textContent = '완성';
+      timerEl.style.color = 'var(--success)';
+      timerEl.classList.remove('urgent');
+      statusEl.textContent = '증기 배출이 끝났습니다. 밥을 잘 저어주세요.';
+      btnEl.textContent = '다시 취사하기';
+      btnEl.disabled = false;
+      btnEl.style.background = 'var(--surface2)';
+      btnEl.style.color = 'var(--muted)';
+    }
+  }
+
+  // ── 버튼 핸들러 ───────────────────────────────────────────
+  function handleBtn() {
+    if (state === 'idle') startCook();
+    else if (state === 'done') resetCook();
+  }
+
+  // ── 취사 시작 ─────────────────────────────────────────────
+  async function startCook() {
+    const cookStart = Date.now();
+    // Firebase에 서버 타임스탬프 저장
+    await fbSet(`sessions/${myUUID}`, {
+      state:      'cooking',
+      cookStart:  cookStart,
+      duration:   TOTAL,
+      steamStart: null
+    });
+    resumeCooking(TOTAL);
+  }
+
+  // ── 취사 재개 (남은 시간으로) ──────────────────────────────
+  function resumeCooking(rem) {
+    state = 'cooking';
+    remaining = Math.max(0, rem);
+    timerEl.textContent = fmt(remaining);
+    setVisual();
+
+    clearInterval(ticker);
+    ticker = setInterval(() => {
+      remaining--;
+      timerEl.textContent = fmt(remaining);
+      if (remaining <= 60) timerEl.classList.add('urgent');
+      if (remaining <= 0) { clearInterval(ticker); startSteam(); }
+    }, 1000);
+  }
+
+  // ── 증기 배출 시작 ────────────────────────────────────────
+  async function startSteam() {
+    const steamStart = Date.now();
+    await fbPatch(`sessions/${myUUID}`, { state: 'steaming', steamStart });
+    doSteam(STEAM_MS);
+  }
+
+  // ── 증기 배출 실행 (남은 ms로) ────────────────────────────
+  function doSteam(remainMs) {
+    state = 'steaming';
+    setVisual();
+    steamEl.classList.add('active');
+    playDone(); // ← 버그 수정: 이제 정의됨
+    setTimeout(finishSteam, Math.max(0, remainMs));
+  }
+
+  // ── 취사 완료 처리 ────────────────────────────────────────
+  async function finishSteam() {
+    await fbPatch(`sessions/${myUUID}`, { state: 'done' });
+    steamEl.classList.remove('active');
+    state = 'done';
+    setVisual();
+    // 닉네임 자동 채우기
+    const saved = localStorage.getItem('rice_my_name') || '';
+    if (saved) document.getElementById('nicknameInput').value = saved;
+    recordBox.classList.add('visible');
+  }
+
+  // ── 리셋 ──────────────────────────────────────────────────
+  async function resetCook() {
+    await fbSet(`sessions/${myUUID}`, { state: 'idle' });
+    clearInterval(ticker);
+    state = 'idle';
+    remaining = TOTAL;
+    timerEl.classList.remove('urgent');
+    recordBox.classList.remove('visible');
+    setVisual();
+  }
+
+  // ── 기록 등록 ──────────────────────────────────────────────
+  async function submitRecord() {
+    const name = document.getElementById('nicknameInput').value.trim();
+    if (!name) { alert('닉네임을 입력해주세요!'); return; }
+    localStorage.setItem('rice_my_name', name);
+
+    const existing = await fbGet(`ranking/${myUUID}`);
+    const currentCount = (existing && existing.count) ? existing.count : 0;
+    await fbSet(`ranking/${myUUID}`, {
+      name:      name,
+      count:     currentCount + 1,
+      updatedAt: Date.now()
+    });
+
+    recordBox.classList.remove('visible');
+    renderRanking();
+  }
+
+  // ── 랭킹 렌더링 ───────────────────────────────────────────
+  async function renderRanking() {
+    lbList.innerHTML = '<div class="lb-empty">랭킹 불러오는 중...</div>';
+    lbTotal.textContent = '';
+
+    const data = await fbGet('ranking');
+    if (!data) {
+      lbList.innerHTML = '<div class="lb-empty">아직 기록이 없어요. 첫 밥을 지어보세요!</div>';
+      return;
+    }
+
+    const entries = Object.entries(data)
+      .map(([uuid, v]) => ({ uuid, name: v.name || '?', count: v.count || 0 }))
+      .sort((a, b) => b.count - a.count);
+
+    if (entries.length === 0) {
+      lbList.innerHTML = '<div class="lb-empty">아직 기록이 없어요. 첫 밥을 지어보세요!</div>';
+      return;
+    }
+
+    const maxCount = entries[0].count;
+    const total    = entries.reduce((s, e) => s + e.count, 0);
+    lbTotal.textContent = `총 ${total}회`;
+    const medals = ['🥇','🥈','🥉'];
+
+    lbList.innerHTML = entries.slice(0, 10).map(({ uuid, name, count }, i) => {
+      const pct       = maxCount > 0 ? Math.round(count / maxCount * 100) : 0;
+      const rankClass = i < 3 ? `top${i + 1}` : '';
+      const rank      = i < 3 ? medals[i] : `${i + 1}`;
+      const isMe      = uuid === myUUID ? '<span class="my-badge">나</span>' : '';
+      return `
+        <div class="lb-row">
+          <span class="lb-rank ${rankClass}">${rank}</span>
+          <div class="lb-row-inner">
+            <div class="lb-bar-wrap"><div class="lb-bar" style="width:${pct}%"></div></div>
+            <span class="lb-name">${name} ${isMe}</span>
+            <span class="lb-count">${count}</span><span class="lb-unit">회</span>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ── 초기화: Firebase에서 세션 복원 ───────────────────────
+  async function init() {
+    // 닉네임 자동 채우기
+    const savedName = localStorage.getItem('rice_my_name') || '';
+    if (savedName) document.getElementById('nicknameInput').value = savedName;
+
+    const session = await fbGet(`sessions/${myUUID}`);
+    const now     = Date.now();
+
+    if (!session || session.state === 'idle' || !session.state) {
+      // 새 세션
+      setVisual();
+    } else if (session.state === 'cooking') {
+      // 탭 닫혔어도 cookStart 기준으로 남은 시간 계산
+      const elapsed = Math.floor((now - session.cookStart) / 1000);
+      const rem     = (session.duration || TOTAL) - elapsed;
+
+      if (rem <= 0) {
+        // 이미 취사 끝났어야 함 → 증기 배출 처리
+        const steamStart = session.steamStart || (session.cookStart + (session.duration || TOTAL) * 1000);
+        const steamElapsed = now - steamStart;
+        if (steamElapsed >= STEAM_MS) {
+          // 증기도 다 끝남
+          await fbPatch(`sessions/${myUUID}`, { state: 'done', steamStart: steamStart });
+          state = 'done';
+          setVisual();
+          if (savedName) document.getElementById('nicknameInput').value = savedName;
+          recordBox.classList.add('visible');
+        } else {
+          await fbPatch(`sessions/${myUUID}`, { state: 'steaming', steamStart: steamStart });
+          doSteam(STEAM_MS - steamElapsed);
+        }
+      } else {
+        resumeCooking(rem);
+      }
+    } else if (session.state === 'steaming') {
+      // 증기 배출 중 복원
+      const steamElapsed = now - (session.steamStart || now);
+      if (steamElapsed >= STEAM_MS) {
+        await fbPatch(`sessions/${myUUID}`, { state: 'done' });
+        state = 'done';
+        setVisual();
+        if (savedName) document.getElementById('nicknameInput').value = savedName;
+        recordBox.classList.add('visible');
+      } else {
+        doSteam(STEAM_MS - steamElapsed);
+      }
+    } else if (session.state === 'done') {
+      state = 'done';
+      setVisual();
+      if (savedName) document.getElementById('nicknameInput').value = savedName;
+      recordBox.classList.add('visible');
+    }
+
+    // 로딩 오버레이 제거
+    loadingEl.classList.add('hidden');
+    setTimeout(() => loadingEl.remove(), 500);
+
+    renderRanking();
+  }
+
+  // 시작
+  init();
+</script>
+</body>
+</html>
+>>>>>>> 9ed180fe715feaaa4b53644979f394cb8ae2822c

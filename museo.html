@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -529,3 +530,536 @@
 </script>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>미술관 — JHY Playground</title>
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;500&family=Noto+Serif+KR:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0f0e0c;
+      --surface: #1a1815;
+      --surface2: #232018;
+      --border: #35302a;
+      --accent: #e8a020;
+      --text: #f0ebe0;
+      --muted: #7a7060;
+      --dim: rgba(15,14,12,0.85);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      cursor: default;
+    }
+
+    /* 노이즈 오버레이 */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9999; opacity: 0.5;
+    }
+
+    /* NAV */
+    .site-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 20px;
+      background: rgba(15,14,12,0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(232,160,32,0.12);
+    }
+    .nav-brand {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 1rem; color: var(--accent);
+      text-decoration: none; letter-spacing: 0.04em;
+    }
+    .nav-tabs { display: flex; gap: 6px; }
+    .nav-tab {
+      padding: 6px 14px; border-radius: 20px;
+      font-size: 0.8rem; font-weight: 700;
+      text-decoration: none; transition: all .2s;
+      border: 1.5px solid transparent;
+    }
+    .nav-tab.on  { background: var(--accent); color: #1a0f00; }
+    .nav-tab.off { border-color: rgba(232,160,32,0.25); color: var(--muted); }
+    .nav-tab.off:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── EXHIBITION HERO ── */
+    .exhibit-hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 48px 72px;
+      position: relative; overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      /* 첫 번째 이미지를 배경으로 */
+      background: url('assets/img/01.png') center center / cover no-repeat;
+      filter: brightness(0.18) saturate(0.6);
+      transform: scale(1.04);
+      transition: transform 8s ease;
+    }
+    .exhibit-hero:hover .hero-bg { transform: scale(1.0); }
+
+    .hero-vignette {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 120% 60% at 50% 100%, rgba(15,14,12,0.98) 0%, transparent 60%),
+        linear-gradient(to bottom, rgba(15,14,12,0.6) 0%, transparent 40%);
+    }
+    .hero-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(232,160,32,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(232,160,32,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 80%);
+    }
+
+    .hero-content { position: relative; max-width: 860px; }
+    .exhibit-no {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 11px; letter-spacing: 0.26em;
+      color: var(--accent); text-transform: uppercase;
+      margin-bottom: 20px;
+      opacity: 0; animation: fadeUp 0.7s 0.2s ease forwards;
+    }
+    .exhibit-title {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: clamp(52px, 10vw, 96px);
+      line-height: 0.95; letter-spacing: -3px;
+      margin-bottom: 24px;
+      opacity: 0; animation: fadeUp 0.7s 0.35s ease forwards;
+    }
+    .exhibit-title .ko { color: var(--text); display: block; }
+    .exhibit-title .en {
+      color: var(--accent); display: block;
+      font-size: clamp(18px, 3vw, 30px);
+      letter-spacing: 0.12em; font-family: 'Noto Serif KR', serif;
+      font-weight: 300; margin-top: 10px;
+    }
+    .exhibit-meta {
+      display: flex; gap: 32px; flex-wrap: wrap;
+      font-size: 12px; color: var(--muted); letter-spacing: 0.08em;
+      opacity: 0; animation: fadeUp 0.7s 0.5s ease forwards;
+    }
+    .meta-item { display: flex; flex-direction: column; gap: 4px; }
+    .meta-label { font-size: 10px; color: rgba(232,160,32,0.5); letter-spacing: 0.18em; text-transform: uppercase; }
+    .meta-value { color: var(--text); font-weight: 500; }
+
+    .hero-scroll {
+      position: absolute; bottom: 40px; right: 48px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      color: var(--muted); font-size: 10px; letter-spacing: 0.2em;
+      opacity: 0; animation: fadeUp 0.7s 0.9s ease forwards;
+    }
+    .scroll-line {
+      width: 1px; height: 60px;
+      background: linear-gradient(to bottom, var(--accent), transparent);
+      animation: lineGrow 2s ease-in-out infinite;
+    }
+    @keyframes lineGrow {
+      0%,100% { transform: scaleY(1); opacity: 1; }
+      50% { transform: scaleY(0.6); opacity: 0.4; }
+    }
+
+    /* ── GALLERY ── */
+    .gallery-section {
+      padding: 80px 32px 120px;
+      max-width: 1080px; margin: 0 auto;
+    }
+    .gallery-header {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      margin-bottom: 56px; border-bottom: 1px solid var(--border); padding-bottom: 24px;
+      flex-wrap: wrap; gap: 16px;
+    }
+    .gallery-label {
+      font-size: 10px; letter-spacing: 0.22em;
+      color: var(--accent); text-transform: uppercase; margin-bottom: 8px;
+    }
+    .gallery-title {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: clamp(22px, 4vw, 32px); color: var(--text);
+    }
+    .gallery-count {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 48px; color: rgba(232,160,32,0.12);
+      line-height: 1; letter-spacing: -2px;
+    }
+
+    /* 갤러리 그리드 — 마소너리 느낌 */
+    .gallery-grid {
+      columns: 3;
+      column-gap: 16px;
+    }
+    @media (max-width: 700px) { .gallery-grid { columns: 2; } }
+    @media (max-width: 420px) { .gallery-grid { columns: 1; } }
+
+    .artwork {
+      break-inside: avoid;
+      margin-bottom: 16px;
+      position: relative;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: transform 0.35s ease, box-shadow 0.35s ease;
+    }
+    .artwork.visible {
+      animation: fadeUp 0.55s ease forwards;
+    }
+    .artwork:nth-child(1) { animation-delay: 0.05s; }
+    .artwork:nth-child(2) { animation-delay: 0.12s; }
+    .artwork:nth-child(3) { animation-delay: 0.19s; }
+    .artwork:nth-child(4) { animation-delay: 0.26s; }
+    .artwork:nth-child(5) { animation-delay: 0.33s; }
+    .artwork:nth-child(6) { animation-delay: 0.40s; }
+    .artwork:nth-child(7) { animation-delay: 0.47s; }
+    .artwork:nth-child(8) { animation-delay: 0.54s; }
+    .artwork:nth-child(9) { animation-delay: 0.61s; }
+
+    .artwork:hover { transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
+
+    .artwork-frame {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    /* 액자 효과 */
+    .artwork-frame::before {
+      content: '';
+      position: absolute; inset: 6px;
+      border: 1px solid rgba(232,160,32,0.08);
+      z-index: 1; border-radius: 2px;
+      pointer-events: none;
+    }
+    .artwork-frame img {
+      width: 100%; height: auto;
+      display: block;
+      filter: brightness(0.92) contrast(1.04);
+      transition: filter 0.4s ease, transform 0.6s ease;
+    }
+    .artwork:hover .artwork-frame img {
+      filter: brightness(1) contrast(1.02);
+      transform: scale(1.02);
+    }
+
+    /* 오버레이 정보 */
+    .artwork-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(15,14,12,0.9) 0%, transparent 50%);
+      opacity: 0; transition: opacity 0.3s ease;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 18px; z-index: 2;
+    }
+    .artwork:hover .artwork-overlay { opacity: 1; }
+
+    .ov-num {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 10px; letter-spacing: 0.2em;
+      color: var(--accent); margin-bottom: 4px;
+    }
+    .ov-title {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 15px; color: var(--text); margin-bottom: 2px;
+    }
+    .ov-zoom {
+      font-size: 10px; color: var(--muted); letter-spacing: 0.1em;
+    }
+
+    /* 작품 번호 태그 */
+    .artwork-num {
+      position: absolute; top: 10px; left: 10px; z-index: 3;
+      background: rgba(15,14,12,0.75);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(232,160,32,0.2);
+      color: var(--accent); font-size: 10px;
+      letter-spacing: 0.14em; padding: 3px 8px; border-radius: 20px;
+    }
+
+    /* ── LIGHTBOX ── */
+    .lightbox {
+      position: fixed; inset: 0; z-index: 99000;
+      background: rgba(8,7,6,0.97);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .lightbox.open { opacity: 1; pointer-events: all; }
+
+    .lb-img-wrap {
+      position: relative;
+      max-width: min(90vw, 900px);
+      max-height: 80vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lb-img-wrap img {
+      max-width: 100%; max-height: 80vh;
+      object-fit: contain;
+      border: 1px solid var(--border);
+      transform: scale(0.94);
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow: 0 40px 120px rgba(0,0,0,0.8);
+    }
+    .lightbox.open .lb-img-wrap img { transform: scale(1); }
+
+    /* 라이트박스 액자선 */
+    .lb-img-wrap::before {
+      content: '';
+      position: absolute; inset: 8px;
+      border: 1px solid rgba(232,160,32,0.1);
+      z-index: 1; pointer-events: none;
+    }
+
+    .lb-info {
+      position: absolute; bottom: -56px; left: 0; right: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 4px;
+    }
+    .lb-title {
+      font-family: 'Black Han Sans', sans-serif;
+      font-size: 16px; color: var(--text);
+    }
+    .lb-num {
+      font-size: 12px; color: var(--muted); letter-spacing: 0.1em;
+    }
+
+    .lb-close {
+      position: fixed; top: 24px; right: 28px;
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 50%; cursor: pointer; color: var(--muted);
+      font-size: 20px; transition: all 0.2s;
+      z-index: 1;
+    }
+    .lb-close:hover { border-color: var(--accent); color: var(--accent); }
+
+    .lb-nav {
+      position: fixed; top: 50%; transform: translateY(-50%);
+      width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(26,24,21,0.8); backdrop-filter: blur(10px);
+      border: 1px solid var(--border); border-radius: 50%;
+      cursor: pointer; color: var(--muted); font-size: 18px;
+      transition: all 0.2s; z-index: 1;
+    }
+    .lb-nav:hover { border-color: var(--accent); color: var(--accent); }
+    .lb-nav.prev { left: 20px; }
+    .lb-nav.next { right: 20px; }
+
+    /* ── FOOTER ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      max-width: 860px; margin: 0 auto;
+    }
+    footer {
+      text-align: center; padding: 36px 24px;
+      color: var(--muted); font-size: 12px; letter-spacing: 0.06em;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 560px) {
+      .nav-tabs { gap: 4px; }
+      .nav-tab  { padding: 5px 9px; font-size: 0.72rem; }
+      .exhibit-hero { padding: 0 24px 60px; }
+      .gallery-section { padding: 60px 20px 80px; }
+      .hero-scroll { display: none; }
+      .lb-nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <a class="nav-brand" href="index.html">JHY Playground</a>
+  <div class="nav-tabs">
+    <a class="nav-tab off" href="index.html">메인 페이지</a>
+    <a class="nav-tab off" href="simul.html">밥솥 시뮬레이터</a>
+    <a class="nav-tab off" href="clicker.html">밥솥 키우기</a>
+    <a class="nav-tab on"  href="museo.html">미술관</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="exhibit-hero">
+  <div class="hero-bg"></div>
+  <div class="hero-vignette"></div>
+  <div class="hero-grid"></div>
+
+  <div class="hero-content">
+    <p class="exhibit-no">Exhibition No. 001 &nbsp;·&nbsp; JHY Gallery</p>
+    <h1 class="exhibit-title">
+      <span class="ko">미술관</span>
+      <span class="en">Online Exhibition</span>
+    </h1>
+    <div class="exhibit-meta">
+      <div class="meta-item">
+        <span class="meta-label">기획</span>
+        <span class="meta-value">@jhy.370937</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">형식</span>
+        <span class="meta-value">온라인 전시</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">작품 수</span>
+        <span class="meta-value" id="total-count">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    SCROLL
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="gallery-section">
+  <div class="gallery-header">
+    <div>
+      <p class="gallery-label">Collection</p>
+      <h2 class="gallery-title">전시 작품</h2>
+    </div>
+    <div class="gallery-count" id="header-count">000</div>
+  </div>
+
+  <div class="gallery-grid" id="gallery">
+    <!-- JS로 동적 생성 -->
+  </div>
+</section>
+
+<div class="divider"></div>
+<footer>
+  <p>made with 명엄 by <a href="#">@jhy.370937</a></p>
+</footer>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" id="lbClose">✕</button>
+  <button class="lb-nav prev" id="lbPrev">‹</button>
+  <button class="lb-nav next" id="lbNext">›</button>
+  <div class="lb-img-wrap">
+    <img src="" alt="" id="lbImg" />
+    <div class="lb-info">
+      <span class="lb-title" id="lbTitle"></span>
+      <span class="lb-num" id="lbNum"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── 이미지 목록 설정 ──────────────────────────────────────────
+  // 01.png, 02.png, 03.png ... 형식 자동 생성
+  // 실제 이미지 수에 맞게 MAX_IMG 숫자를 조정하세요
+  const MAX_IMG = 9;
+
+  const images = Array.from({ length: MAX_IMG }, (_, i) => {
+    const n = String(i + 1).padStart(2, '0');
+    return {
+      src: `assets/img/${n}.png`,
+      title: `작품 ${n}`,
+      num: `No. ${n}`,
+    };
+  });
+
+  // 개수 표시
+  document.getElementById('total-count').textContent = `${MAX_IMG}점`;
+  document.getElementById('header-count').textContent = String(MAX_IMG).padStart(3, '0');
+
+  // ── 갤러리 렌더링 ──────────────────────────────────────────────
+  const gallery = document.getElementById('gallery');
+  images.forEach((img, idx) => {
+    const el = document.createElement('div');
+    el.className = 'artwork';
+    el.innerHTML = `
+      <div class="artwork-num">${img.num}</div>
+      <div class="artwork-frame">
+        <img src="${img.src}" alt="${img.title}" loading="lazy" />
+        <div class="artwork-overlay">
+          <div class="ov-num">${img.num}</div>
+          <div class="ov-title">${img.title}</div>
+          <div class="ov-zoom">클릭하여 크게 보기 ↗</div>
+        </div>
+      </div>
+    `;
+    el.addEventListener('click', () => openLightbox(idx));
+    gallery.appendChild(el);
+  });
+
+  // ── 스크롤 진입 애니메이션 ─────────────────────────────────────
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.artwork').forEach(a => io.observe(a));
+
+  // ── 라이트박스 ─────────────────────────────────────────────────
+  let current = 0;
+  const lb      = document.getElementById('lightbox');
+  const lbImg   = document.getElementById('lbImg');
+  const lbTitle = document.getElementById('lbTitle');
+  const lbNum   = document.getElementById('lbNum');
+
+  function openLightbox(idx) {
+    current = idx;
+    const { src, title, num } = images[idx];
+    lbImg.src = src;
+    lbImg.alt = title;
+    lbTitle.textContent = title;
+    lbNum.textContent = `${idx + 1} / ${images.length}`;
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox() {
+    lb.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function navigate(dir) {
+    current = (current + dir + images.length) % images.length;
+    openLightbox(current);
+  }
+
+  document.getElementById('lbClose').addEventListener('click', closeLightbox);
+  document.getElementById('lbPrev').addEventListener('click', () => navigate(-1));
+  document.getElementById('lbNext').addEventListener('click', () => navigate(1));
+  lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
+
+  // 키보드 네비게이션
+  document.addEventListener('keydown', e => {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape')      closeLightbox();
+    if (e.key === 'ArrowLeft')   navigate(-1);
+    if (e.key === 'ArrowRight')  navigate(1);
+  });
+
+  // 터치 스와이프
+  let touchX = 0;
+  lb.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; });
+  lb.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) navigate(dx < 0 ? 1 : -1);
+  });
+</script>
+</body>
+</html>
+>>>>>>> 9ed180fe715feaaa4b53644979f394cb8ae2822c
